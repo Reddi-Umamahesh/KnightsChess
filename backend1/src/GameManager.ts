@@ -27,25 +27,31 @@ export class GameManganer {
 
     }
 
-    private addHandler(socket : WebSocket) {
+    private addHandler(socket: WebSocket) {
+        console.log("inside handler")
         socket.on("message", (data) => {
             const message = JSON.parse(data.toString());
             if (message.type === INIT_GAME) {
+                
                 if (this.pendingUser) {
+                    
                     const game = new Game(this.pendingUser, socket);
                     this.games.push(game);
                     this.pendingUser = null;
                 } else {
                     
                     this.pendingUser = socket;
+
                 }
             }
-
+           
             if (message.type === MOVE) {
-                
+                console.log("inside moveee")
                 const game = this.games.find(game => game.player1 === socket || game.player2 === socket)
+                console.log("inside move")
                 if (game) {
-                    game.makeMove(socket ,message)
+                    console.log("g")
+                    game.makeMove(socket ,message.move)
                 }
             }
             

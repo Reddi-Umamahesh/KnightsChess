@@ -10,6 +10,7 @@ export class Game {
 
   constructor(player1: WebSocket, player2: WebSocket) {
     this.player1 = player1;
+
     this.player2 = player2;
     this.board = new Chess();
     this.startTime = new Date();
@@ -41,14 +42,21 @@ export class Game {
   ) {
     //validate the move using zod
     if (this.moveCnt % 2 === 0 && socket !== this.player1) {
+      console.log("returned 1")
       return;
     }
     if (this.moveCnt % 2 !== 0 && socket !== this.player2) {
+      console.log("retured 2")
       return;
     }
-    this.moveCnt += 1;
+    
+    console.log("moving.." , move)
+
     try {
       this.board.move(move);
+      this.moveCnt += 1;
+      console.log("moved")
+      console.log(this.board.ascii())
     } catch (e) {
       return;
     }

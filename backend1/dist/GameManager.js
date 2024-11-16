@@ -10,6 +10,7 @@ class GameManganer {
         this.pendingUser = null;
     }
     addUSer(socket) {
+        console.log("add game");
         this.users.push(socket);
         this.addHandler(socket);
     }
@@ -18,6 +19,7 @@ class GameManganer {
         //stop the game here because user left
     }
     addHandler(socket) {
+        console.log("inside handler");
         socket.on("message", (data) => {
             const message = JSON.parse(data.toString());
             if (message.type === messages_1.INIT_GAME) {
