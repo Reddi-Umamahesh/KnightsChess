@@ -1,21 +1,19 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom"
-import LandingPage from "./components/home/LandingPage"
-import Game from "./components/Game"
-
-
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import LandingPage from "./components/home/LandingPage";
+import Game from "./screens/Game";
 
 function App() {
-  
   const appRouter = createBrowserRouter([
     {
       path: "/",
-      element: <LandingPage />
+      element: <LandingPage />,
     },
     {
-      path: '/game',
-      element : <Game/>
-    }
-  ])
+      path: "/game",
+      element: <Game />,
+    }],
+    
+  );
   return (
     <div className=" w-full bg-[#312E2b]">
       <RouterProvider router={appRouter} />
@@ -23,4 +21,4 @@ function App() {
   );
 }
 
-export default App
+export default App;
