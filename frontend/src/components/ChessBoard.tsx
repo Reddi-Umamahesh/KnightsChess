@@ -1,157 +1,152 @@
-import useScreenSize from '@/hooks/ScreenSIze';
-import {  Color, PieceSymbol, Square } from 'chess.js';
 
-import { stringify } from 'querystring';
-import React, { useState }  from 'react'
+import { Color, PieceSymbol, Square } from "chess.js";
 
+import React, { useState } from "react";
+import useScreenSize from "@/hooks/ScreenSIze";
+import { getWidth } from "@/utils/constants";
 interface props {
-  Board:  ({
+  Board: ({
+    square: Square;
+    type: PieceSymbol;
+    color: Color;
+  } | null)[][];
+  socket: WebSocket | null;
+  setBoard: any;
+  Chess: any;
+  isBlack : boolean
+}
+const MOVE = "move";
+const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess , isBlack }) => {
+  const { width } = useScreenSize();
+  const { SquareWidth, BoardWidth } = getWidth(width);
+  const [from, setFrom] = useState<String | null>(null);
+  const [to, setTo] = useState<String | null>(null);
+  const handleClick = (
+    square: {
       square: Square;
       type: PieceSymbol;
       color: Color;
-    } | null)[][],
-  socket: WebSocket | null;
-  setBoard: any,
-  Chess : any
-}
-const MOVE = "move"
-const ChessBoard: React.FC<props> = (
-  {Board , socket , setBoard , Chess}
-) => {
-    const isB = false;
-    const { width } = useScreenSize();
-      let w = 64; 
-      if (width < 1200) {
-        const drop = Math.floor((1200 - width) / 100); 
-        w = 64 - drop * 4;
-    }
-    if (width <= 400) {
-        
-        w = 40;
-    }
-    if (width <= 500 && width >= 400) {
-       
-        w = 44
-    }
-    if (width <= 900 && width >= 800) {
-        w = 56
-    }
-    if (width <= 800 && width >= 500) {
-       
-        w = 56;
-    }
-    const dim = String(w) + "px"
-    const dims = String(w * 8) + "px";
+    } | null,
+    i: number,
+    j: number
+  ) => {
+    const squareRepresentation = getReversedSquareID(i,j);
     
-    const boardCords:string[] = [];
-    if (isB) {
-        for (let i = 1; i <= 8; i++) {
-          for (let j = 8; j >= 1; j--) {
-            const n1 = String.fromCharCode(96 + j);
-            const n2 = String(i);
-            const k = n1 + n2;
-            boardCords.push(k);
-          }
-        }
+    if (!socket) return 
+    
+    console.log(socket)
+    if (!from) {
+      console.log(square)
+      setFrom(squareRepresentation);
     } else {
-        for (let i = 8; i >= 1; i--) {
-          for (let j = 1; j <= 8; j++) {
-            const n1 = String.fromCharCode(96 + j);
-            const n2 = String(i);
-            const k = n1 + n2;
-            boardCords.push(k);
-          }
-        }
+      setTo(squareRepresentation);
+      console.log(to);
+      if (!socket) return;
+      console.log("Sending MOVE:", {
+        type: MOVE,
+        payload: {
+          move: {
+            from,
+            to: squareRepresentation,
+          },
+        },
+      });
+      try {
+        socket.send(
+          JSON.stringify({
+            type: MOVE,
+            payload: {
+              move: {
+                from,
+                to: squareRepresentation,
+              },
+            },
+          })
+        );
+        Chess.move({
+          from: from,
+          to: squareRepresentation,
+        });
+        setBoard(Chess.board());
+        setFrom(null);
+        setTo(null);
+        console.log("board page", Chess.ascii());
+      } catch (e) {
+        console.log("Error sending message", e);
+        setFrom(null);
+        setTo(null);
+      }
+    }
+  };
+    const getReversedBoard = () => {
+    if (!isBlack) return Board;
+    return Board.slice().reverse().map(row =>
+      row.slice().reverse()
+    );
+  };
+  const getReversedSquareID = (i: number, j: number) => {
+    if (isBlack) {
+      return `${String.fromCharCode(97 + (7 - j))}${8 - i}`
+    } else {
+      return `${String.fromCharCode(97 + j )}${8 - i}`
+    }
   }
-  const [from, setFrom] = useState<String | null>(null);
-  const [to, setTo] = useState<String | null>(null);
-    
-  if (!socket) return <div>...Connecting</div>
+
+  const getReversedPiece = (square: { square: Square; type: PieceSymbol; color: Color } | null) => {
+     if (!square) return undefined;
+    const { type, color } = square;
+    return color === "w" ? `${type.toUpperCase()} w.png` : `${type}.png`;
+  }
+
+  if (!socket) return <div>...Connecting</div>;
   return (
     <div>
       <div
         className={` rounded-lg overflow-hidden `}
         style={{
-          width: dims, 
-          height: dims, 
+          width: BoardWidth,
+          height: BoardWidth,
         }}
       >
-        {/* {boardCords.map((coordinate, index) => {
-          const isDarkSquare = (Math.floor(index / 8) + index) % 2 === 0;
+       
+        {getReversedBoard().map((row, i) => {
           return (
-            <div
-              key={coordinate}
-              className={`flex items-center justify-center  text-sm font-medium ${
-                isDarkSquare ? "bg-white text-black" : "bg-green-700 text-black"
-              }`}
-              style={{
-                width: dim,
-                height: dim,
-              }}
-            >
-            </div>
-          );
-        })} */}
-        {
-          Board.map((row , i) => {
-            return <div key={i} className='flex '>
+            <div key={i} className="flex ">
               {row.map((square, j) => {
                 const isDarkSquare = (i + j) % 2 === 0;
                 return (
                   <div
-                    onClick={() => {
-                      const squareRepsentation = `${boardCords[j + i * 8]}`;
-                      console.log(from , to)
-                      if (!from) {
-                        setFrom(`${boardCords[j + i * 8]}`);
-                        console.log(from, to , "sadfasf");
-                      } else {
-                        setTo(`${boardCords[j + i * 8]}`);
-                        console.log(from, to, `${boardCords[j + i * 8]}`);
-                        socket.send(
-                          JSON.stringify({
-                            type: MOVE,
-                            payload: {
-                              move: {
-                                from: from ,
-                                to :squareRepsentation,
-                              },
-                            },
-                          })
-                        );
-                        
-                        Chess.move({
-                          from: from,
-                          to: squareRepsentation,
-                        })
-                        setBoard(Chess.board())
-                        console.log(Chess.ascii())
-                        setFrom(null);
-                      }
-                    }}
-                    className={`flex items-center justify-center  text-sm font-medium ${
+                    onClick={() => handleClick(square, i, j)}
+                    className={`flex items-center p-[4px] justify-center  text-sm font-medium ${
                       isDarkSquare
-                        ? "bg-white text-black"
-                        : "bg-green-700 text-black"
-                      }`}
+                        ? "bg-[#EBECD0] text-black"
+                        : "bg-[#739552] text-black"
+                    }`}
                     key={j}
-                    id={`${boardCords[j + i * 8 ]}`}
+                    id={getReversedSquareID(i, j)}
                     style={{
-                      width: dim,
-                      height: dim,
+                      width: SquareWidth,
+                      height: SquareWidth,
                     }}
                   >
-                    {square ? square.type : ""}
+                    {square ? (
+                      <img
+                        className=""
+                        src={getReversedPiece(square)} 
+                        alt={square.type}
+                      />
+                    ) : (
+                      ""
+                    )}
                   </div>
                 );
               })}
             </div>
-          })
-        }
-
+          );
+        })}
       </div>
     </div>
   );
-}
+};
 
-export default ChessBoard
+export default ChessBoard;
