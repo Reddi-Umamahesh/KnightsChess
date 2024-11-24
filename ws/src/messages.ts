@@ -8,9 +8,17 @@ export const GAME_OVER = 'game_over'
 
 export const WHITE = 'white'
 
+export const BLACK_WINS = "BLACK_WINS";
+
+export const WHITE_WINS = "WHITE_WINS"
+
 export const BLACK = 'black'
 
-export const DRAW = 'draw'
+export const DRAW = 'DRAW'
+
+export const GAME_TIME_MS = 10 * 60 * 1000
+
+export const GAME_ADDED = 'game_added'
 
 export const GAME_ALERT = 'alert'
 
