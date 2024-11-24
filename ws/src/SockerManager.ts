@@ -50,7 +50,7 @@ export class SockerManager {
     });
   }
 
-  removeUsers(userId: string) {
+  removeUser(userId: string) {
     const roomId = this.userRoomMapping.get(userId);
     if (!roomId) {
         console.log("user not found");
@@ -64,6 +64,9 @@ export class SockerManager {
         users.splice(index, 1);
         this.userRoomMapping.delete(userId);
         this.interestedSockets.set(roomId, users);
+        if (this.interestedSockets.get(roomId)?.length === 0) {
+          this.interestedSockets.delete(roomId)
+        }
         console.log("user removed");
       }
       }

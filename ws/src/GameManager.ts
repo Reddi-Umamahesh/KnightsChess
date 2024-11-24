@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { EXIT_GAME, GAME_ALERT, INIT_GAME, MOVE } from "./messages";
+import { EXIT_GAME, GAME_ADDED, GAME_ALERT, INIT_GAME, MOVE } from "./messages";
 import { Game } from "./game";
 import { sockerManager, User } from "./SockerManager";
 
@@ -7,7 +7,7 @@ export class GameManganer {
     
     private games: Game[];
     private pendingUser: User | null;
-    private users : WebSocket[]
+    private users : User[]
 
     constructor() {
         this.games = [];
@@ -17,17 +17,29 @@ export class GameManganer {
 
 
     addUSer(user: User) {
-        this.users.push(user.socket)
+        this.users.push(user)
         this.addHandler(user)
     }
 
     removeuser(socket: WebSocket) {
-        this.users = this.users.filter(user => user !== socket);
+        const user = this.users.find((u) => u.socket === socket);
+        if (!user) {
+            console.log("No user found");
+            return
+        }
+        this.users = this.users.filter((u) => u.socket !== user.socket);
+
+        sockerManager.removeUser(user.userId);
+
+    }
+
+    removeGame(gameId: string) {
+        this.games = this.games.filter((game) => game.gameId !== gameId);
     }
 
     private addHandler(user: User) {
         console.log("inside handler")
-        user.socket.on("message", (data) => {
+        user.socket.on("message", async(data) => {
             const message = JSON.parse(data.toString());
             if (message.type === INIT_GAME) {
                 if (this.pendingUser) {
@@ -45,19 +57,35 @@ export class GameManganer {
                     }
                     sockerManager.addUser(user.userId, game.gameId);
                     this.games.push(game);
+                    await game.updateSecondPlayer(user)
                     this.pendingUser = null;
                 } else {
                     this.pendingUser = user;
+                    const game = new Game(user, null)
+                    this.games.push(game);
+                    sockerManager.broadcast(game.gameId, JSON.stringify({
+                        type: GAME_ADDED,
+                        payload: {
+                            gameId: game.gameId,
+                            message : "waiting for player2"
+                        }
+                    }))
                     
                 }
             }
 
             if (message.type === MOVE) {
                 const game = this.games.find(game => game.player1.socket === user.socket || game.player2?.socket === user.socket)
-                
-                if (game) {
-                    game.makeMove(user ,message.payload.move)
+                if (!game) {
+                    console.log("game not found")
+                    return 
                 }
+                
+                game.makeMove(user, message.payload.move)
+                if (game.Game_result) {
+                    this.removeGame(game.gameId)
+                }
+            
             }
 
             if (message.type === EXIT_GAME) {
@@ -65,8 +93,10 @@ export class GameManganer {
                 const game = this.games.find((g) => g.gameId === gameId)
                 if (!game) {
                     console.log("game not found")
+                    return
                 }
-
+                game.exitGame(user);
+                this.removeGame(game.gameId)
                 
             }
             
