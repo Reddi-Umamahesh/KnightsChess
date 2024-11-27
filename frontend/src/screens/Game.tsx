@@ -65,7 +65,7 @@ const Game = () => {
 
   return (
     <div className=" w-full grid cust960:grid-cols-9  grid-cols-1 text-white sm:px-20 px-5  py-4 gap-5  min-h-screen">
-      <div className=" col-span-5    sm:p-12 p-6 flex items-center justify-center">
+      <div className=" col-span-5    sm:p-12 p-5 flex items-center justify-center">
         <ChessBoard
           Board={board}
           socket={socket}
