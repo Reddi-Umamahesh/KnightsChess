@@ -1,6 +1,13 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import LandingPage from "./components/home/LandingPage";
 import Game from "./screens/Game";
+import {
+  RecoilRoot,
+  atom,
+  selector,
+  useRecoilState,
+  useRecoilValue,
+} from "recoil";
 
 function App() {
 
@@ -26,9 +33,11 @@ function App() {
     }
   );
   return (
-    <div className=" w-full bg-[#312E2b]">
-      <RouterProvider router={appRouter} />
-    </div>
+    <RecoilRoot>
+      <div className=" w-full bg-[#312E2b]">
+        <RouterProvider router={appRouter} />
+      </div>
+    </RecoilRoot>
   );
 }
 

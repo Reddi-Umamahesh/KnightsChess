@@ -1,9 +1,21 @@
 
-import { Color, PieceSymbol, Square } from "chess.js";
+import { BLACK, Color, PieceSymbol, Square, WHITE } from "chess.js";
 
 import React, { useState } from "react";
 import useScreenSize from "@/hooks/ScreenSIze";
 import { getWidth } from "@/utils/constants";
+import { useRecoilValue } from "recoil";
+import { GuestUser, guestUser } from "@/recoil/guestUserAtom";
+import PlayerInfo from "./board/PlayerInfo";
+
+interface message {
+  gameId: string,
+  whitePlayer: GuestUser ,
+  blackPlayer: GuestUser,
+  moves: any[],
+  fen: string,
+  
+}
 interface props {
   Board: ({
     square: Square;
@@ -13,14 +25,30 @@ interface props {
   socket: WebSocket | null;
   setBoard: any;
   Chess: any;
-  isBlack : boolean
+  msg: message | null;
 }
+
 const MOVE = "move";
-const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess , isBlack }) => {
+const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess , msg}) => {
+ 
+
   const { width } = useScreenSize();
+  const user = useRecoilValue(guestUser);
+  console.log(msg)
+  console.log(user)
+  // const isBlack = user?.userId === msg.whitePlayer.userId ? false : true;
   const { SquareWidth, BoardWidth } = getWidth(width);
   const [from, setFrom] = useState<String | null>(null);
   const [to, setTo] = useState<String | null>(null);
+  // if (user && msg) {
+  //   if (user.userId === msg.blackPlayer.userId) {
+  //     setIsBlack(true)
+  //   }
+  // }
+  const isBlack = (user && msg && user.userId === msg.blackPlayer.userId) ? true : false
+  const OppositePlayer = isBlack ? msg?.whitePlayer : msg?.whitePlayer
+
+
   const handleClick = (
     square: {
       square: Square;
@@ -86,7 +114,7 @@ const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess , isBlack 
   };
   const getReversedSquareID = (i: number, j: number) => {
     if (isBlack) {
-      return `${String.fromCharCode(97 + (7 - j))}${8 - i}`
+      return `${String.fromCharCode(97 + (7 - j))}${i + 1}`
     } else {
       return `${String.fromCharCode(97 + j )}${8 - i}`
     }
@@ -97,10 +125,26 @@ const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess , isBlack 
     const { type, color } = square;
     return color === "w" ? `${type.toUpperCase()} w.png` : `${type}.png`;
   }
+  const currentTurn = Chess.turn()
 
-  if (!socket) return <div>...Connecting</div>;
+  if (!socket) return <div className='h-screen w-full'>...Connecting</div>;
   return (
     <div>
+      <div>
+        <PlayerInfo
+          player={OppositePlayer}
+          height={SquareWidth}
+          width={BoardWidth}
+          isBlack
+          isActive={
+            OppositePlayer &&
+            ((!isBlack && currentTurn === BLACK) ||
+              (isBlack && currentTurn === WHITE))
+              ? true
+              : false
+          }
+        />
+      </div>
       <div
         className={` rounded-lg overflow-hidden `}
         style={{
@@ -108,7 +152,6 @@ const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess , isBlack 
           height: BoardWidth,
         }}
       >
-       
         {getReversedBoard().map((row, i) => {
           return (
             <div key={i} className="flex ">
@@ -132,7 +175,7 @@ const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess , isBlack 
                     {square ? (
                       <img
                         className=""
-                        src={getReversedPiece(square)} 
+                        src={getReversedPiece(square)}
                         alt={square.type}
                       />
                     ) : (
@@ -144,6 +187,21 @@ const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess , isBlack 
             </div>
           );
         })}
+      </div>
+      <div>
+        <PlayerInfo
+          player={user}
+          height={SquareWidth}
+          width={BoardWidth}
+          isBlack
+          isActive={
+            OppositePlayer &&
+            ((isBlack && currentTurn === BLACK) ||
+              (!isBlack && currentTurn === WHITE))
+              ? true
+              : false
+          }
+        />
       </div>
     </div>
   );
