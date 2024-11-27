@@ -129,8 +129,8 @@ const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess , msg}) =>
 
   if (!socket) return <div className='h-screen w-full'>...Connecting</div>;
   return (
-    <div>
-      <div>
+    <div className="h-auto over">
+      <div className="py-2">
         <PlayerInfo
           player={OppositePlayer}
           height={SquareWidth}
@@ -146,7 +146,7 @@ const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess , msg}) =>
         />
       </div>
       <div
-        className={` rounded-lg overflow-hidden `}
+        className={` rounded-lg overflow-hidden  `}
         style={{
           width: BoardWidth,
           height: BoardWidth,
@@ -160,7 +160,7 @@ const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess , msg}) =>
                 return (
                   <div
                     onClick={() => handleClick(square, i, j)}
-                    className={`flex items-center p-[4px] justify-center  text-sm font-medium ${
+                    className={` relative flex items-center p-[4px] justify-center  text-sm font-medium ${
                       isDarkSquare
                         ? "bg-[#EBECD0] text-black"
                         : "bg-[#739552] text-black"
@@ -172,11 +172,29 @@ const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess , msg}) =>
                       height: SquareWidth,
                     }}
                   >
+                    {j === 0 && (
+                      <div className="absolute top-0 left-0 text-center text-xs p-1 z-10">
+                        {i + 1}
+                      </div>
+                    )}
+
+                    {i === 7 && (
+                      <div
+                        className="absolute bottom-0 right-0 text-center text-xs p-1 z-10"
+                      >
+                        {String.fromCharCode(97 + j)}{" "}
+                      </div>
+                    )}
+
                     {square ? (
                       <img
-                        className=""
+                        className="absolute "
                         src={getReversedPiece(square)}
                         alt={square.type}
+                        style={{
+                          width: "85%", 
+                          height: "85%",
+                        }}
                       />
                     ) : (
                       ""
@@ -188,7 +206,7 @@ const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess , msg}) =>
           );
         })}
       </div>
-      <div>
+      <div className="py-2">
         <PlayerInfo
           player={user}
           height={SquareWidth}

@@ -1,8 +1,8 @@
 export const getWidth = (width: number) => {
-  let w: number = 64;
+  let w: number = 60;
   if (width < 1200) {
     const drop = Math.floor((1200 - width) / 100);
-    w = 64 - drop * 4;
+    w = 60 - drop * 4;
   }
   if (width <= 400) {
     w = 40;
