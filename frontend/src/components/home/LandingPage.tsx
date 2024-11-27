@@ -4,17 +4,38 @@ import img from '../../assets/chessboard.jpg';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { guest_api_endpoint } from '@/utils/constants';
+import { jwtDecode, JwtPayload } from "jwt-decode";
+import {  useSetRecoilState } from 'recoil';
+import { GuestUser, guestUser, guestUserToken } from '@/recoil/guestUserAtom';
 
 const LandingPage: React.FC = () => {
-  
+  const setGuestUser = useSetRecoilState(guestUser);
+  const setGuestToken = useSetRecoilState(guestUserToken)
   const navigate = useNavigate();
   const handleClick = async () => {
     const url = guest_api_endpoint + '/create-guest';
     try {
       const response= await axios.get(url)
       const token = response.data.token
-      console.log(token)
-      navigate('/game', { state: { token } })
+        const decodedToken: JwtPayload = jwtDecode(token);
+      
+      const guestUserData: GuestUser = {
+          //@ts-ignore
+        userId: decodedToken.userId,
+        //@ts-ignore
+        name: decodedToken.name,
+          //@ts-ignore
+        iat: decodedToken.iat, 
+          //@ts-ignore
+          exp: decodedToken.exp, 
+      };
+      localStorage.setItem("guestToken", token),
+        localStorage.setItem("guestUser", JSON.stringify(guestUserData));
+      setGuestToken(token);
+      setGuestUser(guestUserData);
+      console.log(guestUserData);
+      // setGuestUser(decodedToken)
+      navigate('/game')
     } catch (e) {
       console.log(e)
     }

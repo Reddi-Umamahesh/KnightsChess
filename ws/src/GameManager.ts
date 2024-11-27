@@ -42,8 +42,14 @@ export class GameManganer {
         user.socket.on("message", async(data) => {
             const message = JSON.parse(data.toString());
             if (message.type === INIT_GAME) {
+                console.log("pendinguser")
                 if (this.pendingUser) {
-                    const game = new Game(this.pendingUser,  user);
+                    const game = this.games.find((g) => g.player1.userId === this.pendingUser?.userId)
+                    if (!game) {
+                        console.log("game not found", this.pendingUser.userId )
+                        return
+                    }; 
+                    console.log("pendinguser present");
                     if (this.pendingUser.userId === user.userId) {
                         sockerManager.broadcast(
                           game.gameId,
@@ -55,14 +61,25 @@ export class GameManganer {
                         );
                         return 
                     }
-                    sockerManager.addUser(user.userId, game.gameId);
+                    console.log("adding 2nd player")
+                    
+                    sockerManager.addUser(user ,  game.gameId);
                     this.games.push(game);
                     await game.updateSecondPlayer(user)
                     this.pendingUser = null;
                 } else {
                     this.pendingUser = user;
                     const game = new Game(user, null)
+                    sockerManager.addUser(user ,  game.gameId);
                     this.games.push(game);
+                    console.log(
+                      this.pendingUser.userId,
+                      user.userId,
+                      this.games[0].Game_result,
+                      this.games[0].player1.userId,
+                      this.games[0].player2?.userId
+                    );
+                    console.log("waiting for player2");
                     sockerManager.broadcast(game.gameId, JSON.stringify({
                         type: GAME_ADDED,
                         payload: {

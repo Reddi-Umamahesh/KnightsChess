@@ -1,15 +1,16 @@
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
-import { uniqueNamesGenerator, Config, names } from "unique-names-generator";
+import { uniqueNamesGenerator, Config, names, adjectives, animals } from "unique-names-generator";
 
 const config: Config = {
-  dictionaries: [names],
+  dictionaries: [adjectives , animals],
+ 
 };
 
 export const generateJWT = () => {
   const payload = {
     userId: uuidv4(),
-    name: `guest-${uniqueNamesGenerator(config)}`,
+    name: `${uniqueNamesGenerator(config)}`,
   };
   const secretKey = process.env.SECRETCODE || "your_secret";
   console.log(secretKey);

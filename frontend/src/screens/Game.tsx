@@ -1,23 +1,28 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import ChessBoard from "../components/ChessBoard";
 import { useSocket } from "@/hooks/useSocket";
 import { Chess } from "chess.js";
 import { Button } from "@/components/ui/button";
-import {  useLocation, useNavigate } from "react-router-dom";
-import { INIT_GAME, MOVE } from "@/utils/constants";
+import { useNavigate } from "react-router-dom";
+import { GAME_OVER, INIT_GAME, MOVE } from "@/utils/constants";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { guestUser, guestUserToken } from "@/recoil/guestUserAtom";
 
 const Game = () => {
-
-  const location = useLocation();
-  const token = location.state?.token;
+  const token = useRecoilValue(guestUserToken);
+  const user = useRecoilValue(guestUser);
+  if (!token) {
+    return <div>...connecting</div>;
+  }
   const navigate = useNavigate();
   const socket = useSocket(token);
+  console.log(user);
+  console.log(socket);
   const [chess, SetChess] = useState(new Chess());
   const [board, setBoard] = useState(chess.board());
-  const [isBlack , setIsBlack] = useState(false)
+  const [msg, setMsg] = useState(null);
   useEffect(() => {
     if (!socket) return;
-
 
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
@@ -25,8 +30,9 @@ const Game = () => {
       switch (message.type) {
         case INIT_GAME:
           setBoard(chess.board());
-          setIsBlack(message.payload.color == "w" ? false : true)
-          console.log("game started " + message.payload.color);
+          console.log(message.payload );
+          setMsg(message.payload)
+          console.log("game started " );
           break;
         case MOVE:
           console.log("inside switch");
@@ -41,17 +47,20 @@ const Game = () => {
           console.log(chess.ascii());
           console.log("moved");
           break;
+
+        case GAME_OVER:
+          console.log("game over");
       }
     };
   }, [socket, chess, board]);
-  
+
   if (!socket) {
     return (
       <div>
         <a href="/">back</a>
         <h1>Connecting to server...</h1>
       </div>
-    )
+    );
   }
 
   return (
@@ -62,7 +71,7 @@ const Game = () => {
           socket={socket}
           setBoard={setBoard}
           Chess={chess}
-          isBlack = {isBlack}
+          msg={msg}
         />{" "}
       </div>
       <div className="col-span-3  bg-[#00000024] flex flex-col justify-center items-center p-6">

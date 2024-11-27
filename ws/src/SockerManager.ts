@@ -15,7 +15,7 @@ export class User {
   }
 }
 
-export class SockerManager {
+class SockerManager {
   private static instance: SockerManager;
   private interestedSockets: Map<string, User[]>; // k -room Id & val-users
   private userRoomMapping: Map<string, string>; // key-userId , val-roomId
@@ -32,16 +32,21 @@ export class SockerManager {
     return SockerManager.instance;
   }
 
-  addUser(userId: string, gameId: string) {
-    this.interestedSockets.set(gameId, [
-      ...(this.interestedSockets.get(gameId) || []),
-    ]);
-    this.userRoomMapping.set(userId, gameId);
+  addUser(user: User, gameId: string) {
+    
+    const currentSockets = this.interestedSockets.get(gameId) || []
+    currentSockets.push(user)
+    this.interestedSockets.set(gameId, currentSockets);
+    this.userRoomMapping.set(user.userId, gameId);
+    console.log(this.interestedSockets, " ||")
+    console.log(this.userRoomMapping, "**")
     console.log("user added");
   }
 
   broadcast(gameId: string, message: string) {
+    console.log(gameId)
     const users = this.interestedSockets.get(gameId);
+    // console.log(users);
     if (!users) {
       console.log("no users found");
     }

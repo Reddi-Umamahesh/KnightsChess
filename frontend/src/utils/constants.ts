@@ -25,3 +25,4 @@ export const getWidth = (width: number) => {
 export const guest_api_endpoint = "http://localhost:3000/api/v1/guest";
 export const INIT_GAME = "init_game";
 export const MOVE = "move";
+export const GAME_OVER = 'game_over'

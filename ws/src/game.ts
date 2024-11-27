@@ -1,21 +1,36 @@
 import { WebSocket } from "ws";
-import {  BLACK, Chess, Move, Square, WHITE } from "chess.js";
-import { BLACK_WINS, DRAW, GAME_OVER, GAME_TIME_MS, INIT_GAME, MOVE, WHITE_WINS } from "./messages";
+import { BLACK, Chess, Move, Square, WHITE } from "chess.js";
+import {
+  BLACK_WINS,
+  DRAW,
+  GAME_OVER,
+  GAME_TIME_MS,
+  INIT_GAME,
+  MOVE,
+  WHITE_WINS,
+} from "./messages";
 import { sockerManager, User } from "./SockerManager";
 import { v4 as uuidv4 } from "uuid";
 import { basename } from "path";
 type GAME_RESULT = "WHITE_WINS" | "BLACK_WINS" | "DRAW";
-type GAME_STATUS = "PLAYER_EXIT" | 'GAME_ABANDONDED' | "STALEMATE" | 'IN_PROGRESS' | 'TIME_OUT' | 'CHECKMATE' | "RESIGNATION";
+type GAME_STATUS =
+  | "PLAYER_EXIT"
+  | "GAME_ABANDONDED"
+  | "STALEMATE"
+  | "IN_PROGRESS"
+  | "TIME_OUT"
+  | "CHECKMATE"
+  | "RESIGNATION";
 export function isPromoting(chess: Chess, from: Square, to: Square) {
+  const piece = chess.get(from);
+  if (piece.type !== "p") return;
+  if (piece.color !== chess.turn()) return;
 
-  const piece = chess.get(from)
-  if (piece.type !== 'p') return 
-  if (piece.color !== chess.turn()) return
+  if (!["1", "8"].some((ele) => to.endsWith(ele))) return false;
 
-  if (!["1", "8"].some((ele) => to.endsWith(ele))) return false
-  
-  return chess.moves({square : from , verbose : true}).some((move) => move.to === to)
-  
+  return chess
+    .moves({ square: from, verbose: true })
+    .some((move) => move.to === to);
 }
 export class Game {
   public gameId: string;
@@ -40,7 +55,7 @@ export class Game {
 
   async updateSecondPlayer(player2: User) {
     this.player2 = player2;
-    console.log("game started");
+    console.log("game started ,,");
     sockerManager.broadcast(
       this.gameId,
       JSON.stringify({
@@ -58,14 +73,27 @@ export class Game {
 
   makeMove(user: User, move: Move) {
     //validate the move using zod
-    if (this.board.turn() === BLACK && user.socket !== this.player1.socket)
-      return;
+    console.log(
+      "inside move",
+      this.board.turn(),
+      user.userId,
+    );
+    console.log(this.player1.userId);
+    console.log(this.player2?.userId);
 
-    if (this.board.turn() === WHITE && user.socket !== this.player2?.socket)
+    if (this.board.turn() === BLACK && user.userId !== this.player2?.userId) {
+      console.log("hello")
       return;
+    }
+
+    if (this.board.turn() === WHITE && user.userId !== this.player1.userId) {
+      console.log("hi")
+      return;
+    }
+
 
     const moveTimeStamp = new Date(Date.now());
-
+    console.log("inside move **", moveTimeStamp);
     try {
       console.log("moving..", move);
       if (isPromoting(this.board, move.from, move.to)) {
@@ -122,7 +150,7 @@ export class Game {
         : this.board.turn() === WHITE
         ? BLACK_WINS
         : WHITE_WINS;
-      this.Game_result = response
+      this.Game_result = response;
       sockerManager.broadcast(
         this.gameId,
         JSON.stringify({
@@ -157,25 +185,25 @@ export class Game {
 
   async resetAbandonTime() {
     if (this.timer) {
-      clearTimeout(this.timer)
+      clearTimeout(this.timer);
     }
     this.timer = setTimeout(() => {
       this.endGame(
-        "GAME_ABANDONDED", 
+        "GAME_ABANDONDED",
         this.board.turn() === BLACK ? "WHITE_WINS" : "BLACK_WINS"
-      )
-    }, 60 * 1000)
+      );
+    }, 60 * 1000);
   }
   async resetMovetimer() {
     if (this.move_time) {
-      clearTimeout(this.move_time)
+      clearTimeout(this.move_time);
     }
-    const turn = this.board.turn()
-    const timeLeft = GAME_TIME_MS - (turn === WHITE ? this.player1_time : this.player2_time)
+    const turn = this.board.turn();
+    const timeLeft =
+      GAME_TIME_MS - (turn === WHITE ? this.player1_time : this.player2_time);
     this.move_time = setTimeout(() => {
-        this.endGame("TIME_OUT" , turn === WHITE ? 'BLACK_WINS' : 'WHITE_WINS')
-    } , timeLeft)
-    
+      this.endGame("TIME_OUT", turn === WHITE ? "BLACK_WINS" : "WHITE_WINS");
+    }, timeLeft);
   }
 
   exitGame(user: User) {

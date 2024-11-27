@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 export const useSocket = (token:string) => {
   const WS_URL = `ws://localhost:8080/?token=${token}`
+  
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {
@@ -11,7 +12,7 @@ export const useSocket = (token:string) => {
       setSocket(ws);
       };
       
-      ws.onclose = () => {
+    ws.onclose = () => {
         setSocket(null);
       }
       
