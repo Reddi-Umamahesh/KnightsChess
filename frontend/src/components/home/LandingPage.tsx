@@ -63,7 +63,7 @@ const LandingPage: React.FC = () => {
           </Button>
           <Button
             onClick={() => {
-              navigate("/game");
+              navigate("/login");
             }}
             className="w-96 h-20 text-2xl bg-blue-700 hover:bg-blue-800 font-semibold"
           >
