@@ -12,7 +12,7 @@ generator client {
 model User {
     userId String @id @default(uuid())
     Username String 
-    password String
+    password String?
     email String @unique
     gamesAsWhite Game[] @relation("WhiteGames")
     gamesAsBlack Game[] @relation("BlackGames")
