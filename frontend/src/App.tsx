@@ -3,11 +3,11 @@ import LandingPage from "./components/home/LandingPage";
 import Game from "./screens/Game";
 import {
   RecoilRoot,
-  atom,
-  selector,
-  useRecoilState,
-  useRecoilValue,
 } from "recoil";
+  import { ToastContainer } from "react-toastify";
+import { UserProvider } from "./auth/UserContext";
+import LoginForm from "./auth/Login";
+import RegisterForm from "./auth/RegisterForm";
 
 function App() {
 
@@ -16,6 +16,13 @@ function App() {
       {
         path: "/",
         element: <LandingPage />,
+      },
+      {
+        path: "/login",
+        element : <LoginForm />
+      }, {
+        path: '/signup',
+        element : <RegisterForm/>
       },
       {
         path: "/game",
@@ -34,9 +41,12 @@ function App() {
   );
   return (
     <RecoilRoot>
-      <div className=" w-full bg-[#312E2b]">
-        <RouterProvider router={appRouter} />
-      </div>
+      <UserProvider>
+        <div className=" w-full bg-[#312E2b]">
+          <RouterProvider router={appRouter} />
+        </div>
+        <ToastContainer />
+      </UserProvider>
     </RecoilRoot>
   );
 }
