@@ -25,12 +25,31 @@ export const getWidth = (width: number) => {
 export interface BaseUserInterface {
   userId: string;
   username: string;
-  email: string | null;
+  email?: string | null;
 }
 export const guest_api_endpoint = "http://localhost:3000/api/v1/guest";
 export const user_api_endpoint = "http://localhost:3000/api/v1/user"
 export const google_auth_endpoint = "http://localhost:3000/auth/google";
+
+
 export const USER_TOKEN = 'user_token';
 export const INIT_GAME = "init_game";
 export const MOVE = "move";
 export const GAME_OVER = 'game_over'
+export const GAME_START = 'game_start'
+
+
+export type Color = 'w' | 'b';
+export type PieceSymbol =
+  | "p"
+  | "k"
+  | "q"
+  | "b"
+  | "n"
+  | "r"
+  | "P"
+  | "K"
+  | "Q"
+  | "B"
+  | "N"
+  | "R";

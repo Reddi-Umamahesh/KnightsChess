@@ -1,21 +1,24 @@
 
-import { BLACK, Color, PieceSymbol, Square, WHITE } from "chess.js";
-
+import { BLACK,   Square, WHITE } from "chess.js";
 import React, { useState } from "react";
 import useScreenSize from "@/hooks/ScreenSIze";
-import { getWidth } from "@/utils/constants";
+import { BaseUserInterface, Color, getWidth, PieceSymbol } from "@/utils/constants";
 import { useRecoilValue } from "recoil";
-import { GuestUser, guestUser } from "@/recoil/guestUserAtom";
+
+// import { GuestUser, user } from "@/recoil/guestUserAtom";
+import { userState } from '@/recoil/userAtoms';
 import PlayerInfo from "./board/PlayerInfo";
+
 
 interface message {
   gameId: string,
-  whitePlayer: GuestUser ,
-  blackPlayer: GuestUser,
+  whitePlayer: BaseUserInterface ,
+  blackPlayer: BaseUserInterface,
   moves: any[],
   fen: string,
   
 }
+
 interface props {
   Board: ({
     square: Square;
@@ -29,11 +32,11 @@ interface props {
 }
 
 const MOVE = "move";
-const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess , msg}) => {
+const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess ,msg}) => {
  
 
   const { width } = useScreenSize();
-  const user = useRecoilValue(guestUser);
+  const user = useRecoilValue(userState);
   console.log(msg)
   console.log(user)
   // const isBlack = user?.userId === msg.whitePlayer.userId ? false : true;
@@ -58,13 +61,13 @@ const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess , msg}) =>
     i: number,
     j: number
   ) => {
-    const squareRepresentation = getReversedSquareID(i,j);
-    
-    if (!socket) return 
-    
-    console.log(socket)
+    const squareRepresentation = getReversedSquareID(i, j);
+
+    if (!socket) return;
+
+    console.log(socket);
     if (!from) {
-      console.log(square)
+      console.log(square);
       setFrom(squareRepresentation);
     } else {
       setTo(squareRepresentation);
@@ -120,11 +123,13 @@ const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess , msg}) =>
     }
   }
 
-  const getReversedPiece = (square: { square: Square; type: PieceSymbol; color: Color } | null) => {
-     if (!square) return undefined;
+  const getReversedPiece = (
+    square: { square: Square; type: PieceSymbol; color: Color } | null
+  ) => {
+    if (!square) return undefined;
     const { type, color } = square;
     return color === "w" ? `${type.toUpperCase()} w.png` : `${type}.png`;
-  }
+  };
   const currentTurn = Chess.turn()
 
   if (!socket) return <div className='h-screen w-full'>...Connecting</div>;

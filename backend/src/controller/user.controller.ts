@@ -45,14 +45,17 @@ export const Login = async (req: Request, res: Response) => {
         });
     }
     try {
+        
         const user = await prisma.user.findUnique
             ({ where: { email } });
+      
         if (!user) {
             res.status(400).json({
                 message: "Invalid email or password", success: false
             });
             return
         }
+
         const pwd = user.password|| ""
         const isValidPassword = await bcrypt.compare(password, pwd);
         if (!isValidPassword) {

@@ -2,21 +2,23 @@ import { useEffect, useState } from "react";
 import ChessBoard from "../components/ChessBoard";
 import { useSocket } from "@/hooks/useSocket";
 import { Chess } from "chess.js";
-import { Button } from "@/components/ui/button";
+
 import { useNavigate } from "react-router-dom";
 import { GAME_OVER, INIT_GAME, MOVE } from "@/utils/constants";
-import { useRecoilState, useRecoilValue } from "recoil";
-import { guestUser, guestUserToken } from "@/recoil/guestUserAtom";
+import {  useRecoilValue } from "recoil";
+import { userState } from "@/recoil/userAtoms";
+import UtiliyBox from "@/components/board/UtiliyBox";
+import { getJWTTOKENFromLocalStorage } from "@/lib/utils";
 
 const Game = () => {
-  const token = useRecoilValue(guestUserToken);
-  const user = useRecoilValue(guestUser);
+  const token = getJWTTOKENFromLocalStorage();
+  const user = useRecoilValue(userState);
   if (!token) {
     return <div>...connecting</div>;
   }
   const navigate = useNavigate();
   const socket = useSocket(token);
-  console.log(user);
+  console.log(user, "game");
   console.log(socket);
   const [chess, SetChess] = useState(new Chess());
   const [board, setBoard] = useState(chess.board());
@@ -74,19 +76,9 @@ const Game = () => {
           msg={msg}
         />{" "}
       </div>
-      <div className="col-span-3  bg-[#00000024] flex flex-col justify-center items-center p-6">
-        <Button
-          onClick={() => {
-            socket?.send(
-              JSON.stringify({
-                type: INIT_GAME,
-              })
-            );
-          }}
-          className="w-64 h-12  text-2xl bg-green-700 hover:bg-green-800 font-semibold"
-        >
-          Play
-        </Button>
+      {/* utility box */}
+      <div className="col-span-3 flex lg:mt-[25%] justify-center">
+        <UtiliyBox />
       </div>
       <div className="col-span-1 "></div>
     </div>
