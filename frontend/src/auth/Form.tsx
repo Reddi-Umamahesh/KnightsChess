@@ -1,15 +1,17 @@
 import React from "react";
 import axios from "axios";
 import { useUserContext } from "./UserContext";
-import { useSetRecoilState } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@radix-ui/react-label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
-import { user_api_endpoint  } from "@/utils/constants";
-import { authState, userState } from "@/recoil/userAtoms";
+import { BaseUserInterface, user_api_endpoint, USER_TOKEN  } from "@/utils/constants";
+import { userState } from "@/recoil/userAtoms";
+import { jwtDecode } from "jwt-decode";
+
 
 interface InputData {
   name: string;
@@ -69,26 +71,22 @@ export const logout = async (
 
 const Form: React.FC<FormProps> = ({ bodyData, footerData, route, type }) => {
   const navigate = useNavigate();
-  const setAuthToken = useSetRecoilState(authState);
+  
   const setUser = useSetRecoilState(userState);
   const { formData, setFormData } = useUserContext();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, files } = e.target;
-    if (type === "file" && files) {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: files[0],
-      }));
-    } else {
+    const { name, value } = e.target;
+
       setFormData((prev) => ({
         ...prev,
         [name]: value,
       }));
-    }
+    
   };
 
   const action = `${user_api_endpoint}` + route;
+
   const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData();
@@ -106,20 +104,27 @@ const Form: React.FC<FormProps> = ({ bodyData, footerData, route, type }) => {
         withCredentials: true,
       });
       console.log("Server response:", res.data);
-      const { token, user } = res.data;
-
+      const { token } = res.data;
       if (res.data.success) {
-        localStorage.setItem("authToken", token);
-        localStorage.setItem("user", JSON.stringify(user));
-
-        setAuthToken(token);
-        setUser(user);
+        
+        const decoded = jwtDecode(token);
+        const decodedUser: BaseUserInterface = {
+          //@ts-ignore
+          userId: decoded.userId,
+          //@ts-ignore
+          username: decoded.name,
+        };
+        setUser(decodedUser);
+        localStorage.setItem(USER_TOKEN, token);
+        navigate("/game");
         toast.success(res.data.message);
-
+        console.log(
+          localStorage.getItem("authToken"),useRecoilValue(userState)
+        );
         if (route === "/login") {
           console.log("Login successful, navigating...");
           toast.success("Login successful!");
-          navigate("/");
+          navigate("/game");
         } else {
           console.log("Signup successful, navigating...");
           toast.success("Signup successful!");
@@ -145,8 +150,8 @@ const Form: React.FC<FormProps> = ({ bodyData, footerData, route, type }) => {
   };
 
   return (
-    <div className=" flex cust-400:items-center   justify-center w-full h-screen overflow-y-auto  p-2 ">
-      <Card className="cust-400:min-w-[300px] w-[320px] cust-400:w-auto  cust-400:min-h-[60%] overflow-auto h-fit cust-400:mt-0 mt-10">
+    <div className=" flex cust-400:items-center   justify-center w-full h-screen overflow-y-auto  p-2  bg-[url('/chess-bg.jpeg')] bg-cover ">
+      <Card className="cust-400:min-w-[300px] w-[320px] cust-400:w-auto  cust-400:min-h-[60%] overflow-auto h-fit cust-400:mt-0 mt-10 bg-gray-800 bg-opacity-80 text-white border-gray-800">
         <CardHeader>
           <CardTitle className="text-3xl text-center font-bold font-qwitcher">
             Knights Chess
@@ -189,14 +194,14 @@ const Form: React.FC<FormProps> = ({ bodyData, footerData, route, type }) => {
             </div>
           </CardContent>
           <CardFooter className="flex justify-between flex-col space-y-8">
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full bg-green-700">
               {footerData.button}
             </Button>
             <div>
               <span>{footerData.msg} </span>
               <a
                 href={`/${footerData.link}`}
-                className="text-primary hover:underline"
+                className="text-primary hover:underline text-blue-600"
               >
                 {footerData.link}
               </a>

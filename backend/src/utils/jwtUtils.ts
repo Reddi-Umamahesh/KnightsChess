@@ -8,6 +8,7 @@ const config: Config = {
 };
 
 export const generateJWT = () => {
+  console.log("generated in be");
   const payload = {
     userId: uuidv4(),
     name: `${uniqueNamesGenerator(config)}`,
