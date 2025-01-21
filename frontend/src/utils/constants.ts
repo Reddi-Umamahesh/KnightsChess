@@ -37,6 +37,7 @@ export const INIT_GAME = "init_game";
 export const MOVE = "move";
 export const GAME_OVER = 'game_over'
 export const GAME_START = 'game_start'
+export const GAME_ADDED = 'game_added'
 
 
 export type Color = 'w' | 'b';
@@ -53,3 +54,11 @@ export type PieceSymbol =
   | "B"
   | "N"
   | "R";
+
+export interface message {
+  gameId: string;
+  whitePlayer: BaseUserInterface;
+  blackPlayer: BaseUserInterface;
+  moves: any[];
+  fen: string;
+}

@@ -1,10 +1,11 @@
 
-import { GuestUser } from '@/recoil/guestUserAtom';
+
+import { BaseUserInterface } from '@/utils/constants';
 import React, { useEffect, useRef, useState } from 'react'
 
 
 interface props{
-  player: GuestUser | null | undefined,  
+  player: BaseUserInterface | null | undefined,  
   height: string
   width: string
   isBlack: boolean
@@ -62,7 +63,7 @@ const PlayerInfo: React.FC<props> = ({ player, height, width, isBlack , isActive
     >
       <div className="flex gap-3 text-center">
         <img className="h-10 " src={"guest-user.jpg"} alt="" />
-        {player?.name || "Guest_knight"}
+        {player?.username || "Guest_knight"}
       </div>
       <div
         className={`w-20 ${

@@ -8,8 +8,12 @@ import {
 import { UserProvider } from "./auth/UserContext";
 import LoginForm from "./auth/Login";
 import RegisterForm from "./auth/RegisterForm";
+// import { getJWTTOKENFromLocalStorage } from "./lib/utils";
+import { WebSocketProvider } from "./hooks/useSocket";
+import { USER_TOKEN } from "./utils/constants";
 
 function App() {
+  const token = localStorage.getItem(USER_TOKEN)
 
   const appRouter = createBrowserRouter(
     [
@@ -19,14 +23,19 @@ function App() {
       },
       {
         path: "/login",
-        element : <LoginForm />
-      }, {
-        path: '/signup',
-        element : <RegisterForm/>
+        element: <LoginForm />,
+      },
+      {
+        path: "/signup",
+        element: <RegisterForm />,
       },
       {
         path: "/game",
-        element: <Game />,
+        element: (
+          <WebSocketProvider token={token}>
+            <Game />
+          </WebSocketProvider>
+        ),
       },
     ],
     {
@@ -42,10 +51,12 @@ function App() {
   return (
     <RecoilRoot>
       <UserProvider>
-        <div className=" w-full bg-[#312E2b]">
-          <RouterProvider router={appRouter} />
-        </div>
-        <ToastContainer />
+        
+          <div className=" w-full bg-[#312E2b]">
+            <RouterProvider router={appRouter} />
+          </div>
+          <ToastContainer />
+       
       </UserProvider>
     </RecoilRoot>
   );

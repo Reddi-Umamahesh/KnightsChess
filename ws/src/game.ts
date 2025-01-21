@@ -12,6 +12,7 @@ import {
 import { sockerManager, User } from "./SockerManager";
 import { v4 as uuidv4 } from "uuid";
 import { basename } from "path";
+// import {createGame} from "../../backend/src/createGame"
 type GAME_RESULT = "WHITE_WINS" | "BLACK_WINS" | "DRAW";
 type GAME_STATUS =
   | "PLAYER_EXIT"
@@ -54,6 +55,17 @@ export class Game {
   }
 
   async updateSecondPlayer(player2: User) {
+
+    // try {
+    //   await createGame({
+    //     whitePlayerId: this.player1.userId,
+    //     blackPlayerId: player2.userId,
+    //     gameId: this.gameId,
+    //     boardState: this.board.fen(),
+    //   });
+    // } catch (e) {
+
+    // }
     this.player2 = player2;
     console.log("game started ,,");
     sockerManager.broadcast(
@@ -62,8 +74,8 @@ export class Game {
         type: INIT_GAME,
         payload: {
           gameId: this.gameId,
-          whitePlayer: this.player1,
-          blackPlayer: this.player2,
+          whitePlayer: this.player1.userId,
+          blackPlayer: this.player2.userId,
           fen: this.board.fen(),
           moves: [],
         },

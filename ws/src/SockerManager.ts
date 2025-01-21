@@ -51,6 +51,7 @@ class SockerManager {
       console.log("no users found");
     }
     users?.map((g) => {
+      console.log(message);
       g.socket.send(message);
     });
   }

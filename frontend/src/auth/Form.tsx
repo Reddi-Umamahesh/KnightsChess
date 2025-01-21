@@ -8,8 +8,8 @@ import { Label } from "@radix-ui/react-label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
-import { BaseUserInterface, user_api_endpoint, USER_TOKEN  } from "@/utils/constants";
-import { userState } from "@/recoil/userAtoms";
+import { BaseUserInterface, user_api_endpoint, USER_TOKEN  } from "../utils/constants";
+import { userState } from "../recoil/userAtoms";
 import { jwtDecode } from "jwt-decode";
 
 
