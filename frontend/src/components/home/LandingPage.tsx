@@ -10,11 +10,13 @@ import {  useSetRecoilState } from 'recoil';
 import {userState } from '@/recoil/userAtoms';
 
 
+
 const LandingPage: React.FC = () => {
 
   
   const setUser = useSetRecoilState(userState);
   console.log(localStorage.getItem("authToken"))
+  
   const navigate = useNavigate();
   const handleClick = async () => {
 
@@ -31,7 +33,9 @@ const LandingPage: React.FC = () => {
         username: decoded.name,
       };
       setUser(decodedUser)
+      localStorage.setItem('Token', token)
       localStorage.setItem(USER_TOKEN, token)
+      
       navigate('/game')
 
     } catch (e) {
@@ -41,32 +45,35 @@ const LandingPage: React.FC = () => {
   }
     
   return (
-    <div className="min-h-screen py-5 px-24 grid sm:grid-cols-2 grid-cols-1 gap-5 bg-[url('/chess-bg.jpeg')] bg-cover">
-      <div className="sm:flex hidden  items-center  justify-center ">
-        {/* <img src={img} alt="" /> */}
-      </div>
-      <div className="flex items-center justify-center flex-wrap text-white pb-10">
-        <div className="text-white text-4xl font-bold mt-10">
-          Play Chess Online on the #2 site!
+    <div>
+      
+      <div className="min-h-screen py-5 px-24 grid sm:grid-cols-2 grid-cols-1 gap-5 bg-[url('/chess-bg.jpeg')] bg-cover">
+        <div className="sm:flex hidden  items-center  justify-center ">
+          {/* <img src={img} alt="" /> */}
         </div>
+        <div className="flex items-center justify-center flex-wrap text-white pb-10">
+          <div className="text-white text-4xl font-bold mt-10">
+            Play Chess Online on the #2 site!
+          </div>
 
-        <div className="w-full flex items-center justify-center mb-10 flex-col gap-5 mt-[20%]">
-          <Button
-            onClick={() => {
-              navigate("/login");
-            }}
-            className="lg:w-96 h-20 p-10 text-2xl bg-blue-700 hover:bg-blue-800 font-semibold"
-          >
-            {"Signup / login"}
-          </Button>
-          <Button
-            onClick={() => {
-              handleClick();
-            }}
-            className="lg:w-96 h-20 p-10 text-2xl bg-green-700 hover:bg-green-800 font-semibold"
-          >
-            {"play as Guest"}
-          </Button>
+          <div className="w-full flex items-center justify-center mb-10 flex-col gap-5 mt-[20%]">
+            <Button
+              onClick={() => {
+                navigate("/login");
+              }}
+              className="lg:w-96 h-20 p-10 text-2xl bg-blue-700 hover:bg-blue-800 font-semibold"
+            >
+              {"Signup / login"}
+            </Button>
+            <Button
+              onClick={() => {
+                handleClick();
+              }}
+              className="lg:w-96 h-20 p-10 text-2xl bg-green-700 hover:bg-green-800 font-semibold"
+            >
+              {"play as Guest"}
+            </Button>
+          </div>
         </div>
       </div>
     </div>

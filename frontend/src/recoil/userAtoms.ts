@@ -1,16 +1,12 @@
-import { BaseUserInterface, USER_TOKEN } from "@/utils/constants";
-import { atom } from "recoil";
+
+import { BaseUserInterface, USER_TOKEN } from "../utils/constants";
 import { jwtDecode } from "jwt-decode";
-let userFromStorage: BaseUserInterface | null = null
+import { atom } from "recoil";
+
 const token = localStorage.getItem(USER_TOKEN);
 console.log("changed", token)
 
-if (token) {
-    userFromStorage = jwtDecode(token) || null
-    console.log(userFromStorage,"|")
-}
-
-
+const userFromStorage: BaseUserInterface | null = token ? jwtDecode(token) : null;
 
 export const userState = atom<BaseUserInterface | null>({
     key: 'userState',

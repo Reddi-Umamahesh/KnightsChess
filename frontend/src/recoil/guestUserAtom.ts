@@ -2,12 +2,12 @@
 // import { jwtDecode } from "jwt-decode";
 // import { atom } from "recoil";
 
-// export interface GuestUser{
-//     userId: string,
-//     name: string,
-//     iat: number,
-//     exp: number,
-// }
+export interface GuestUser{
+    userId: string,
+    name: string,
+    iat: number,
+    exp: number,
+}
 // const token = localStorage.getItem('guestToken');
 // let userFromStorage: GuestUser | null = null;
 // if (token) {

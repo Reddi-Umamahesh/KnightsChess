@@ -1,23 +1,19 @@
-
-import { BLACK,   Square, WHITE } from "chess.js";
+import { BLACK, Square, WHITE } from "chess.js";
 import React, { useState } from "react";
 import useScreenSize from "@/hooks/ScreenSIze";
-import { BaseUserInterface, Color, getWidth, PieceSymbol } from "@/utils/constants";
+import {
+  // BaseUserInterface,
+  Color,
+  getWidth,
+  message,
+  PieceSymbol,
+} from "@/utils/constants";
 import { useRecoilValue } from "recoil";
 
 // import { GuestUser, user } from "@/recoil/guestUserAtom";
-import { userState } from '@/recoil/userAtoms';
-import PlayerInfo from "./board/PlayerInfo";
-
-
-interface message {
-  gameId: string,
-  whitePlayer: BaseUserInterface ,
-  blackPlayer: BaseUserInterface,
-  moves: any[],
-  fen: string,
-  
-}
+import { userState } from "@/recoil/userAtoms";
+import PlayerInfo from "../board/PlayerInfo";
+// import WaitLoader from "../board/WaitLoader";
 
 interface props {
   Board: ({
@@ -32,25 +28,23 @@ interface props {
 }
 
 const MOVE = "move";
-const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess ,msg}) => {
- 
-
+const ChessBoard: React.FC<props> = ({
+  Board,
+  socket,
+  setBoard,
+  Chess,
+  msg,
+}) => {
+  
   const { width } = useScreenSize();
   const user = useRecoilValue(userState);
-  console.log(msg)
-  console.log(user)
-  // const isBlack = user?.userId === msg.whitePlayer.userId ? false : true;
+  console.log(msg);
+  console.log(user);
   const { SquareWidth, BoardWidth } = getWidth(width);
   const [from, setFrom] = useState<String | null>(null);
   const [to, setTo] = useState<String | null>(null);
-  // if (user && msg) {
-  //   if (user.userId === msg.blackPlayer.userId) {
-  //     setIsBlack(true)
-  //   }
-  // }
-  const isBlack = (user && msg && user.userId === msg.blackPlayer.userId) ? true : false
-  const OppositePlayer = isBlack ? msg?.whitePlayer : msg?.whitePlayer
-
+  const isBlack = user && msg && user.userId === msg.blackPlayer.userId ? true : false;
+  const OppositePlayer = isBlack ? msg?.whitePlayer : msg?.whitePlayer;
 
   const handleClick = (
     square: {
@@ -109,19 +103,19 @@ const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess ,msg}) => 
       }
     }
   };
-    const getReversedBoard = () => {
+  const getReversedBoard = () => {
     if (!isBlack) return Board;
-    return Board.slice().reverse().map(row =>
-      row.slice().reverse()
-    );
+    return Board.slice()
+      .reverse()
+      .map((row) => row.slice().reverse());
   };
   const getReversedSquareID = (i: number, j: number) => {
     if (isBlack) {
-      return `${String.fromCharCode(97 + (7 - j))}${i + 1}`
+      return `${String.fromCharCode(97 + (7 - j))}${i + 1}`;
     } else {
-      return `${String.fromCharCode(97 + j )}${8 - i}`
+      return `${String.fromCharCode(97 + j)}${8 - i}`;
     }
-  }
+  };
 
   const getReversedPiece = (
     square: { square: Square; type: PieceSymbol; color: Color } | null
@@ -130,9 +124,9 @@ const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess ,msg}) => 
     const { type, color } = square;
     return color === "w" ? `${type.toUpperCase()} w.png` : `${type}.png`;
   };
-  const currentTurn = Chess.turn()
-
-  if (!socket) return <div className='h-screen w-full'>...Connecting</div>;
+  const currentTurn = Chess.turn();
+  console.log(msg , isBlack , OppositePlayer);
+  if (!socket) return <div className="h-screen w-full">...Connecting</div>;
   return (
     <div className="h-auto over">
       <div className="py-2">
@@ -157,9 +151,10 @@ const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess ,msg}) => 
           height: BoardWidth,
         }}
       >
+        {/* <div className="flex items-center justify-center ">{loading ? <WaitLoader isLoading={loading} /> : ""}</div> */}
         {getReversedBoard().map((row, i) => {
           return (
-            <div key={i} className="flex ">
+            <div key={i} className="flex">
               {row.map((square, j) => {
                 const isDarkSquare = (i + j) % 2 === 0;
                 return (
@@ -184,9 +179,7 @@ const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess ,msg}) => 
                     )}
 
                     {i === 7 && (
-                      <div
-                        className="absolute bottom-0 right-0 text-center text-xs p-1 z-10"
-                      >
+                      <div className="absolute bottom-0 right-0 text-center text-xs p-1 z-10">
                         {String.fromCharCode(97 + j)}{" "}
                       </div>
                     )}
@@ -197,7 +190,7 @@ const ChessBoard: React.FC<props> = ({ Board, socket, setBoard, Chess ,msg}) => 
                         src={getReversedPiece(square)}
                         alt={square.type}
                         style={{
-                          width: "85%", 
+                          width: "85%",
                           height: "85%",
                         }}
                       />

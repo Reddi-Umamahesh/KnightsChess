@@ -1,24 +1,46 @@
-import React from 'react'
-import { Button } from '../ui/button';
-import { useSocket } from '@/hooks/useSocket';
-import { INIT_GAME } from '@/utils/constants';
-import { useRecoilValue } from 'recoil';
-import {  userState } from '@/recoil/userAtoms';
+import React, { useState } from "react";
+import { Button } from "../components/ui/button";
+import {  useWebSocket } from "../hooks/useSocket";
+import { INIT_GAME } from "../utils/constants";
+import { useRecoilValue } from "recoil";
+import { userState } from "../recoil/userAtoms";
 import { FaChessBoard } from "react-icons/fa";
 import { FaRegPlusSquare } from "react-icons/fa";
 import { FaUsers } from "react-icons/fa";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { getJWTTOKENFromLocalStorage } from '@/lib/utils';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
+import { getJWTTOKENFromLocalStorage } from "../lib/utils";
 
-
+// interface ButtonComponentProps {
+//   onClick: (message:any) => void;
+// }
 const UtiliyBox: React.FC = () => {
   const token = getJWTTOKENFromLocalStorage();
   const user = useRecoilValue(userState);
-  console.log(user)
-    if (token == null) {
-        return <div>...connecting</div>
+  const [isClicked, setIsClicked] = useState(false)
+  const handleClick = () => { 
+    if (!isClicked) {
+      console.log("clicked");
+      socket?.send(
+        JSON.stringify({
+          type: INIT_GAME,
+        })
+      );
+      setIsClicked(true);
     }
-    const socket = useSocket(token)
+
+
+  }
+  console.log(user);
+  if (token == null) {
+    return 
+  }
+  const socket = useWebSocket();
+  console.log(socket);
   return (
     <div>
       <div className=" h-full w-full min-h-64   bg-[#00000024] flex pt-2">
@@ -41,14 +63,11 @@ const UtiliyBox: React.FC = () => {
             value="newgame"
           >
             <Button
-              onClick={() => {
-                socket?.send(
-                  JSON.stringify({
-                    type: INIT_GAME,
-                  })
-                );
-              }}
-              className="w-64 h-12  text-2xl bg-green-700 hover:bg-green-800 font-semibold"
+              onClick={handleClick}
+              disabled={isClicked}
+              className={`w-64 h-12  text-2xl bg-green-700 hover:bg-green-800 font-semibold ${
+                isClicked ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
               Play
             </Button>
@@ -63,6 +82,6 @@ const UtiliyBox: React.FC = () => {
       </div>
     </div>
   );
-}
+};
 
-export default UtiliyBox
+export default UtiliyBox;

@@ -1,4 +1,4 @@
-import {  USER_TOKEN } from "@/utils/constants";
+import {  USER_TOKEN } from "../utils/constants";
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
