@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "composite": true, // Required if this is part of a larger project with references
+    "module": "commonjs",
+    "target": "es2016",
+    "outDir": "../dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}
