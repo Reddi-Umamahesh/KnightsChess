@@ -12,7 +12,7 @@ import {
 import { sockerManager, User } from "./SockerManager";
 import { v4 as uuidv4 } from "uuid";
 import { basename } from "path";
-// import {createGame} from "../../backend/src/createGame"
+import {createGame} from "../../backend/src/createGame"
 type GAME_RESULT = "WHITE_WINS" | "BLACK_WINS" | "DRAW";
 type GAME_STATUS =
   | "PLAYER_EXIT"
@@ -24,6 +24,7 @@ type GAME_STATUS =
   | "RESIGNATION";
 export function isPromoting(chess: Chess, from: Square, to: Square) {
   const piece = chess.get(from);
+  if (!piece) return false;
   if (piece.type !== "p") return;
   if (piece.color !== chess.turn()) return;
 
@@ -56,16 +57,16 @@ export class Game {
 
   async updateSecondPlayer(player2: User) {
 
-    // try {
-    //   await createGame({
-    //     whitePlayerId: this.player1.userId,
-    //     blackPlayerId: player2.userId,
-    //     gameId: this.gameId,
-    //     boardState: this.board.fen(),
-    //   });
-    // } catch (e) {
+    try {
+      await createGame({
+        whitePlayerId: this.player1.userId,
+        blackPlayerId: player2.userId,
+        gameId: this.gameId,
+        boardState: this.board.fen(),
+      });
+    } catch (e) {
 
-    // }
+    }
     this.player2 = player2;
     console.log("game started ,,");
     sockerManager.broadcast(
