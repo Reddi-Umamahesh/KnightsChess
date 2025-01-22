@@ -1,0 +1,40 @@
+
+
+datasource db {
+    provider = "postgresql"
+    url = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model User {
+    userId String @id @default(uuid())
+    Username String 
+    password String?
+    email String @unique
+    gamesAsWhite Game[] @relation("WhiteGames")
+    gamesAsBlack Game[] @relation("BlackGames")
+    
+}
+
+model Game {
+    gameId String @id @default(uuid())
+    startTime DateTime
+    status String
+    boardState String 
+    gameResult String?
+
+
+    whitePlayerId String 
+    blackPlayerId String
+
+    whitePlayer User @relation("WhiteGames" , fields: [whitePlayerId] , references: [userId])
+    blackPlayer User @relation("BlackGames" , fields: [blackPlayerId] ,references: [userId])
+}
+
+model Guest {
+    id String @id @default(uuid())
+    Username String
+}

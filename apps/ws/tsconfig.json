@@ -1,0 +1,13 @@
+  {
+    "files": [],
+    "references": [{ "path": "../frontend" }, { "path": "../backend" }],
+    "compilerOptions": {
+      "rootDir": "./", // Point to the root directory of your monorepo
+      "outDir": "./dist",
+      "esModuleInterop": true,
+      "module": "commonjs",
+      "target": "es2016",
+      "strict": true,
+      "composite": true
+    }
+  }
