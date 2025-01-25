@@ -1,4 +1,4 @@
-# Turborepo starter
+# Online Chess Game
 
 This Turborepo starter is maintained by the Turborepo core team.
 
