@@ -1,20 +1,8 @@
 import express, { Request, Response, Router } from "express";
-import { generateJWT } from "../utils/jwtUtils";
+import { createGuestUser } from "../controller/guestUser.controller";
 
 
 const router: Router = express.Router();
 
-router.route("/create-guest").get((req: Request, res: Response) => {
-    try {
-        const token = generateJWT();
-    res.status(200).json({
-        success: true,
-        token: token
-    })
-    } catch (e:any) {
-        res.status(500).json({ success: false, message: e.message });
-
-    }
-    return 
-})
+router.route("/createGuest").get(createGuestUser)
 export default router

@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { uniqueNamesGenerator, Config, names, adjectives, animals } from "unique-names-generator";
 
 const config: Config = {
-  dictionaries: [adjectives , animals],
+  dictionaries: [animals],
  
 };
 
@@ -18,7 +18,7 @@ export const generateJWT = () => {
 
   const token = jwt.sign(payload, secretKey, {
     algorithm: "HS256",
-    expiresIn: "1h",
+    expiresIn: "5h",
   });
 
   return token;

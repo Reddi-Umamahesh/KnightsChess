@@ -62,6 +62,7 @@ passport.use(
               userId: profile.id,
               Username: profile.displayName,
               email: profile.emails ? profile.emails[0].value : "",
+              isGuest: false,
             },
           });
           console.log(user);
