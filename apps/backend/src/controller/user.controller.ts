@@ -22,6 +22,7 @@ export const Register = async(req: Request, res: Response) => {
                 Username: username,
                 email,
                 password: hashedPassword,
+                isGuest: false
             }
         })
         console.log(user)

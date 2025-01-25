@@ -1,40 +1,55 @@
-
-
-datasource db {
-    provider = "postgresql"
-    url = env("DATABASE_URL")
+generator client {
+  provider = "prisma-client-js"
 }
 
-generator client {
-    provider = "prisma-client-js"
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-    userId String @id @default(uuid())
-    Username String 
-    password String?
-    email String @unique
-    gamesAsWhite Game[] @relation("WhiteGames")
-    gamesAsBlack Game[] @relation("BlackGames")
-    
+  userId       String  @id @default(uuid())
+  Username     String
+  password     String?
+  email        String  @unique
+  gamesAsBlack Game[]  @relation("BlackGames")
+  gamesAsWhite Game[]  @relation("WhiteGames")
+  isGuest      Boolean @default(false)
 }
 
 model Game {
-    gameId String @id @default(uuid())
-    startTime DateTime
-    status String
-    boardState String 
-    gameResult String?
+  gameId        String   @id @default(uuid())
+  startTime     DateTime
+  status        String
+  currentFen    String
+  gameResult    String?
+  whitePlayerId String
+  blackPlayerId String
+  moves         Move[]
+  whitePlayerTimeConsumed Int?
+  blackPlayerTimeConsumed Int?
+  blackPlayer   User     @relation("BlackGames", fields: [blackPlayerId], references: [userId])
+  whitePlayer   User     @relation("WhiteGames", fields: [whitePlayerId], references: [userId])
+}
 
-
-    whitePlayerId String 
-    blackPlayerId String
-
-    whitePlayer User @relation("WhiteGames" , fields: [whitePlayerId] , references: [userId])
-    blackPlayer User @relation("BlackGames" , fields: [blackPlayerId] ,references: [userId])
+model Move {
+  moveId   String   @id @default(uuid())
+  gameId   String
+  from    String
+  to String
+  piece  String
+  promotion     String?
+  captured  String?
+  moveNumber  Int
+  timeTaken     DateTime
+  createdAt    DateTime @default(now())
+  game     Game     @relation(fields: [gameId], references: [gameId])
 }
 
 model Guest {
-    id String @id @default(uuid())
-    Username String
+  userId    String  @id @default(uuid()) 
+  Username String
+  email     String  @unique
+  password  String?
+  isGuest   Boolean @default(true)
 }

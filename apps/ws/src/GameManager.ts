@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { EXIT_GAME, GAME_ADDED, GAME_ALERT, INIT_GAME, MOVE } from "./messages";
+import { EXIT_GAME, GAME_ADDED, GAME_ALERT, INIT_GAME, MOVE_MADE } from "./messages";
 import { Game } from "./game";
 import { sockerManager, User } from "./SockerManager";
 
@@ -75,7 +75,7 @@ export class GameManganer {
                     console.log(
                       this.pendingUser.userId,
                       user.userId,
-                      this.games[0].Game_result,
+                      this.games[0].game_result,
                       this.games[0].player1.userId,
                       this.games[0].player2?.userId
                     );
@@ -91,7 +91,7 @@ export class GameManganer {
                 }
             }
 
-            if (message.type === MOVE) {
+            if (message.type === MOVE_MADE) {
                 const game = this.games.find(game => game.player1.socket === user.socket || game.player2?.socket === user.socket)
                 if (!game) {
                     console.log("game not found")
@@ -99,7 +99,7 @@ export class GameManganer {
                 }
                 
                 game.makeMove(user, message.payload.move)
-                if (game.Game_result) {
+                if (game.game_result) {
                     this.removeGame(game.gameId)
                 }
             
