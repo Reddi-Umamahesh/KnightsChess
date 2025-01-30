@@ -1,7 +1,8 @@
 import { WebSocket } from "ws";
-import { EXIT_GAME, GAME_ADDED, GAME_ALERT, INIT_GAME, MOVE_MADE } from "./messages";
+import { DRAW_ACCEPT, DRAW_OFFER, DRAW_REJECT, EXIT_GAME, GAME_ADDED, GAME_ALERT, GAME_ENDED, INIT_GAME, MOVE_MADE } from "./messages";
 import { Game } from "./game";
 import { sockerManager, User } from "./SockerManager";
+import { db } from "./db";
 
 export class GameManganer {
     
@@ -92,7 +93,7 @@ export class GameManganer {
             }
 
             if (message.type === MOVE_MADE) {
-                const game = this.games.find(game => game.player1.socket === user.socket || game.player2?.socket === user.socket)
+                const game = this.games.find((g) => g.gameId === message.payload.gameId)
                 if (!game) {
                     console.log("game not found")
                     return 
@@ -117,6 +118,97 @@ export class GameManganer {
                 
             }
             
+            if (message.type == DRAW_OFFER) {
+                const gameId = message.payload.gameId
+                const game = this.games.find((g) => g.gameId === gameId)
+                if (!game) {
+                    console.log("game not found")
+                    return
+                }
+                game.offerDraw(user);
+            }
+            if (message.type === DRAW_ACCEPT) {
+                const gameId = message.payload.gameId;
+                const game = this.games.find((g) => g.gameId === gameId);
+                if (!game) {
+                    console.log("game not found");
+                    return;
+                }
+                game.acceptDraw();
+            }
+            if (message.type === DRAW_REJECT) {
+                const gameId = message.payload.gameId;
+                const game = this.games.find((g) => g.gameId === gameId);
+                if (!game) {
+                    console.log("game not found");
+                    return;
+                }
+                game.rejectDraw();
+            }
+
+            if (message.type === "JOIN_ROOM") {
+                const gameId = message.payload.gameId;
+                if(!gameId) {
+                    console.log("gameId not found");
+                    return
+                }
+                let game = this.games.find((g) => g.gameId === gameId);
+                const gameFromDB = await db.game.findUnique({
+                    where: {
+                        gameId: gameId
+                    },
+                    include: {
+                        moves: {
+                            orderBy: {
+                                moveNumber: "asc"
+                            }
+                        },
+                        whitePlayer: true,
+                        blackPlayer: true
+                    }
+                });
+
+                if (game && !game.player2) {
+                    game.player2 = user;
+                    sockerManager.addUser(user, game.gameId);
+                    await game.updateSecondPlayer(user);
+                    return
+                }
+
+                if (!gameFromDB) {
+                    user.socket.send(JSON.stringify({
+                        type: GAME_ALERT,
+                        message: "Game not found"
+                    }));
+                    return 
+                }
+
+                if(gameFromDB.status !== "IN_PROGRESS") {
+                    user.socket.send(JSON.stringify({
+                        type: GAME_ENDED,
+                        payload: {
+                            result: gameFromDB.gameResult,
+                            status: gameFromDB.status,
+                            currentFen: gameFromDB.currentFen,
+                            moves: gameFromDB.moves,
+                            whitePlayer: {
+                                id: gameFromDB.whitePlayer.userId,
+                                username : gameFromDB.whitePlayer.Username
+                            } ,
+                            blackPlayer: {
+                                id: gameFromDB.blackPlayer.userId,
+                                username : gameFromDB.blackPlayer.Username
+                            },
+                            player1_time_consumed: gameFromDB.whitePlayerTimeConsumed,
+                            player2_time_consumed: gameFromDB.blackPlayerTimeConsumed
+
+                        }
+                    }));
+                    return
+                }
+
+            }
+
         })
     
     }

@@ -20,8 +20,13 @@ export const setUser = (user:User) => {
     const payload =  {
         id : user.userId,
         email : user.email,
-        username : user.Username
+        username: user.Username,
+        isGuest : user.isGuest
     }
-    const token = jwt.sign(payload, secretKey);
+     console.log("Payload to be signed:", payload);
+    const token = jwt.sign(payload, secretKey, {
+      algorithm: "HS256",
+      expiresIn: "5h",
+    });
     return token
 }

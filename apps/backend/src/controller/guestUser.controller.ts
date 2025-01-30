@@ -22,15 +22,22 @@ export const createGuestUser = async(req: Request, res: Response) => {
                 password: "",
                isGuest: true,
         },
-        });
+       });
+        
         console.log(guestUser);
         const token = setUser(guestUser);
-         res.status(201).send({
-            message: "User created successfully",
-            success: true,
-            token
-         })
-        return
+        console.log("login sucecessful");
+         res.cookie("token", token, {
+           httpOnly: true,
+           // secure : process.env.NODE_ENV === 'production',
+           sameSite: "strict",
+           maxAge: 60 * 60 * 24, // 1 day , change this
+         });
+         res.status(200).json({
+           message: "Login successful",
+           success: true,
+         });
+         return;
     } catch (e) {
         console.log(e)
         res.status(400).send({ message: "Unable to create , try again", success: false })

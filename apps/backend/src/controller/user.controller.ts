@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken'
 import { setUser } from "../utils/auth";
+
 const prisma = new PrismaClient();
 
 export const Register = async(req: Request, res: Response) => {
@@ -27,6 +28,12 @@ export const Register = async(req: Request, res: Response) => {
         })
         console.log(user)
         const token = setUser(user);
+         res.cookie("token", token, {
+           httpOnly: true,
+           // secure : process.env.NODE_ENV === 'production',
+           sameSite: "strict",
+           maxAge: 60 * 60 * 24, // 1 day , change this
+         });
         res.status(201).send({
             message: "User created successfully",
             success: true,
@@ -65,10 +72,18 @@ export const Login = async (req: Request, res: Response) => {
             })
         }
         const token = setUser(user)
+        console.log("login sucecessful")
+        res.cookie('token' , token , {
+            httpOnly: true,
+            secure : process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 // 1 day , change this
+
+        })
         res.status(200).json({
             message: "Login successful",
             success: true,
-            token 
+            user
         })
         return
 
@@ -78,4 +93,23 @@ export const Login = async (req: Request, res: Response) => {
         });
         return 
     }
+}
+
+export const logout = (req: Request, res: Response) => {
+    try {
+          res.cookie('token', '', {
+    httpOnly: true,  
+    sameSite: 'strict', 
+    maxAge: 0, 
+  });
+  res.status(200).json({
+      message: "loggoed out successfully",
+      success : true
+  })
+    } catch (e) {
+        console.log(e)
+        res.status(400).json({
+            message: "Error logging out", success: false
+        })
+  }
 }

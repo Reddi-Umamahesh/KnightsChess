@@ -4,5 +4,5 @@ import { createGuestUser } from "../controller/guestUser.controller";
 
 const router: Router = express.Router();
 
-router.route("/createGuest").get(createGuestUser)
+router.route("/createGuest").post(createGuestUser)
 export default router

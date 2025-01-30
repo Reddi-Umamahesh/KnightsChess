@@ -26,9 +26,11 @@ export interface BaseUserInterface {
   userId: string;
   username: string;
   email?: string | null;
+  isGuest : boolean
 }
 export const guest_api_endpoint = "http://localhost:3000/api/v1/guest";
 export const user_api_endpoint = "http://localhost:3000/api/v1/user"
+export const api_endpoint = "http://localhost:3000/api/v1";
 export const google_auth_endpoint = "http://localhost:3000/auth/google";
 
 
@@ -62,3 +64,10 @@ export interface message {
   moves: any[];
   fen: string;
 }
+
+//helper function 
+export const getCookie = (name: string) => {
+  console.log("from helper :", name)
+  const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+  return match ? match[2] : null; // Return the cookie value if found, else null
+};

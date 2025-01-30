@@ -11,7 +11,7 @@ import {
 import { useRecoilValue } from "recoil";
 
 // import { GuestUser, user } from "@/recoil/guestUserAtom";
-import { userState } from "@/recoil/userAtoms";
+import { authState } from "@/recoil/userAtoms";
 import PlayerInfo from "../board/PlayerInfo";
 // import WaitLoader from "../board/WaitLoader";
 
@@ -37,7 +37,8 @@ const ChessBoard: React.FC<props> = ({
 }) => {
   
   const { width } = useScreenSize();
-  const user = useRecoilValue(userState);
+  const def = useRecoilValue(authState);
+  const user = def.user
   console.log(msg);
   console.log(user);
   const { SquareWidth, BoardWidth } = getWidth(width);

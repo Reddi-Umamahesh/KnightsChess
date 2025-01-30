@@ -5,27 +5,31 @@ dotenv.config()
 import cors from "cors";
 import guestRoute from './routes/guest.route'
 import userRoute from './routes/User.route'
+import authRoute from './routes/authCheck'
 import googleRouter from './auth'
 import passport from "passport";
 import { Strategy as GoogleStrategy, Profile } from 'passport-google-oauth20';
+import cookieParser from "cookie-parser";
 const app = express()
 const port = 3000
 
 const session = require('express-session');
 import { Prisma, PrismaClient, User } from '@prisma/client'
+
 import { error } from "console";
 import { isAuthenticated } from "./utils/middleware";
 app.use(express.json())
-
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }))
 
 
 const prisma = new PrismaClient();
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   credentials: true,
 };
+
 
 
 app.use(cors(corsOptions));
@@ -40,6 +44,7 @@ app.use(
 
 app.use(passport.initialize());
 app.use(passport.session());
+
 
 
 passport.use(
@@ -98,7 +103,8 @@ app.listen(port, () => {
 
 
 app.use("/api/v1/guest" , guestRoute)
-app.use("/api/v1/User" , userRoute )
+app.use("/api/v1/User", userRoute)
+app.use("/api/v1", authRoute)
 app.use("/auth", googleRouter);
 
 // app.get("/profile", isAuthenticated, (req: Request, res: Response) => {
