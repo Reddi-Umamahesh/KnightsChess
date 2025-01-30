@@ -5,12 +5,13 @@ import { Chess } from "chess.js";
 
 import { GAME_ADDED, GAME_OVER, INIT_GAME, MOVE } from "@/utils/constants";
 import { useRecoilValue } from "recoil";
-import { userState } from "@/recoil/userAtoms";
+import { authState } from "@/recoil/userAtoms";
 import UtiliyBox from "@/board/UtiliyBox";
 
 const Game = () => {
-  // const token = localStorage.getItem("token");
-  const user = useRecoilValue(userState);
+
+  const def = useRecoilValue(authState);
+  const user = def.user
   if (user == null) {
     return <div></div>;
   }

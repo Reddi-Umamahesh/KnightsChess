@@ -1,52 +1,48 @@
-import React from 'react'
-import { Button } from '../ui/button'
+import React, { useEffect } from "react";
+import { Button } from "../components/ui/button";
 // import img from '../../assets/chessboard.jpg';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { BaseUserInterface, guest_api_endpoint, USER_TOKEN } from '@/utils/constants';
-import { jwtDecode } from "jwt-decode";
-import {  useSetRecoilState } from 'recoil';
-
-import {userState } from '@/recoil/userAtoms';
+import { useNavigate } from "react-router-dom";
+import { useguestAuth } from "@/auth/guestAuth";
+import axios from "axios";
+import { api_endpoint } from "@/utils/constants";
+import { useSetRecoilState } from "recoil";
+import { authState } from "@/recoil/userAtoms";
 
 
 
 const LandingPage: React.FC = () => {
 
-  
-  const setUser = useSetRecoilState(userState);
-  console.log(localStorage.getItem("authToken"))
-  
   const navigate = useNavigate();
-  const handleClick = async () => {
+  const guestAuth = useguestAuth();
+  const setAuthState = useSetRecoilState(authState)
 
-    console.log("from here!! guest button")
-    const url = guest_api_endpoint + '/create-guest';
-    try {
-      const response= await axios.get(url)
-      const token = response.data.token  
-      const decoded = jwtDecode(token);
-      const decodedUser: BaseUserInterface = {
-        //@ts-ignore
-        userId: decoded.userId,
-        //@ts-ignore
-        username: decoded.name,
-      };
-      setUser(decodedUser)
-      localStorage.setItem('Token', token)
-      localStorage.setItem(USER_TOKEN, token)
-      
-      navigate('/game')
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const url = api_endpoint + "/check-auth";
+        const response = await axios.get(url, {
+          withCredentials: true,
+        });
 
-    } catch (e) {
-      console.log(e)
-    }
-    
-  }
-    
+        if (response.data.isAuthenticated) {
+          setAuthState({
+            isAuthenticated: true,
+            user: response.data.user,
+          });
+          navigate("/home");
+        }
+      } catch (error) {
+        console.log(error);
+        setAuthState({
+          isAuthenticated: false,
+          user: null,
+        });
+      }
+    };
+    checkAuth();
+  } , [navigate , setAuthState])
   return (
     <div>
-      
       <div className="min-h-screen py-5 px-24 grid sm:grid-cols-2 grid-cols-1 gap-5 bg-[url('/chess-bg.jpeg')] bg-cover">
         <div className="sm:flex hidden  items-center  justify-center ">
           {/* <img src={img} alt="" /> */}
@@ -66,9 +62,7 @@ const LandingPage: React.FC = () => {
               {"Signup / login"}
             </Button>
             <Button
-              onClick={() => {
-                handleClick();
-              }}
+              onClick={guestAuth}
               className="lg:w-96 h-20 p-10 text-2xl bg-green-700 hover:bg-green-800 font-semibold"
             >
               {"play as Guest"}
@@ -78,6 +72,6 @@ const LandingPage: React.FC = () => {
       </div>
     </div>
   );
-}
+};
 
-export default LandingPage
+export default LandingPage;

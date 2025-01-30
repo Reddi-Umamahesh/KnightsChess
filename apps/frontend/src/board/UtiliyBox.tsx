@@ -3,7 +3,7 @@ import { Button } from "../components/ui/button";
 import {  useWebSocket } from "../hooks/useSocket";
 import { INIT_GAME } from "../utils/constants";
 import { useRecoilValue } from "recoil";
-import { userState } from "../recoil/userAtoms";
+import { authState } from "../recoil/userAtoms";
 import { FaChessBoard } from "react-icons/fa";
 import { FaRegPlusSquare } from "react-icons/fa";
 import { FaUsers } from "react-icons/fa";
@@ -20,7 +20,8 @@ import { getJWTTOKENFromLocalStorage } from "../lib/utils";
 // }
 const UtiliyBox: React.FC = () => {
   const token = getJWTTOKENFromLocalStorage();
-  const user = useRecoilValue(userState);
+  const def = useRecoilValue(authState);
+  const user = def.user
   const [isClicked, setIsClicked] = useState(false)
   const handleClick = () => { 
     if (!isClicked) {

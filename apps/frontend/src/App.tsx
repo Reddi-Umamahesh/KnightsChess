@@ -1,10 +1,8 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import LandingPage from "./components/home/LandingPage";
+import LandingPage from "./home/LandingPage";
 import Game from "./screens/Game";
-import {
-  RecoilRoot,
-} from "recoil";
-  import { ToastContainer } from "react-toastify";
+import { RecoilRoot } from "recoil";
+import { ToastContainer } from "react-toastify";
 import { UserProvider } from "./auth/UserContext";
 import LoginForm from "./auth/Login";
 import RegisterForm from "./auth/RegisterForm";
@@ -13,7 +11,7 @@ import { WebSocketProvider } from "./hooks/useSocket";
 import { USER_TOKEN } from "./utils/constants";
 
 function App() {
-  const token = localStorage.getItem(USER_TOKEN)
+  const token = localStorage.getItem(USER_TOKEN);
 
   const appRouter = createBrowserRouter(
     [
@@ -51,12 +49,10 @@ function App() {
   return (
     <RecoilRoot>
       <UserProvider>
-        
-          <div className=" w-full bg-[#312E2b]">
-            <RouterProvider router={appRouter} />
-          </div>
-          <ToastContainer />
-       
+        <div className=" w-full bg-[#312E2b]">
+          <RouterProvider router={appRouter} />
+        </div>
+        <ToastContainer />
       </UserProvider>
     </RecoilRoot>
   );

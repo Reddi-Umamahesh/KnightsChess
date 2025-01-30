@@ -1,15 +1,16 @@
 import React from "react";
 import axios from "axios";
 import { useUserContext } from "./UserContext";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import {  useSetRecoilState } from "recoil";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@radix-ui/react-label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
-import { BaseUserInterface, user_api_endpoint, USER_TOKEN  } from "../utils/constants";
-import { userState } from "../recoil/userAtoms";
+import { BaseUserInterface, user_api_endpoint, USER_TOKEN } from "../utils/constants";
+import { authState } from "../recoil/userAtoms";
+
 import { jwtDecode } from "jwt-decode";
 
 
@@ -71,8 +72,8 @@ export const logout = async (
 
 const Form: React.FC<FormProps> = ({ bodyData, footerData, route, type }) => {
   const navigate = useNavigate();
-  
-  const setUser = useSetRecoilState(userState);
+  const setAuthState = useSetRecoilState(authState);
+ 
   const { formData, setFormData } = useUserContext();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,20 +108,25 @@ const Form: React.FC<FormProps> = ({ bodyData, footerData, route, type }) => {
       const { token } = res.data;
       if (res.data.success) {
         
-        const decoded = jwtDecode(token);
+        const decoded:BaseUserInterface = jwtDecode(token);
         const decodedUser: BaseUserInterface = {
-          //@ts-ignore
           userId: decoded.userId,
-          //@ts-ignore
-          username: decoded.name,
+          username: decoded.username,
+          isGuest: decoded.isGuest , 
         };
-        setUser(decodedUser);
-        localStorage.setItem(USER_TOKEN, token);
+
+       
+        setAuthState({
+          isAuthenticated: true,
+          user : decodedUser
+        })
+        console.log(
+          "User authenticated successfully with token: ",
+         
+        );
         navigate("/game");
         toast.success(res.data.message);
-        console.log(
-          localStorage.getItem("authToken"),useRecoilValue(userState)
-        );
+        
         if (route === "/login") {
           console.log("Login successful, navigating...");
           toast.success("Login successful!");

@@ -312,7 +312,7 @@ export class Game {
     )
   }
 
-  acceptDraw(user: User) {
+  acceptDraw() {
     sockerManager.broadcast(
       this.gameId,
       JSON.stringify({
@@ -325,7 +325,7 @@ export class Game {
     this.endGame("COMPLETED", "DRAW");
   }
 
-  rejectDraw(user: User) {
+  rejectDraw() {
     sockerManager.broadcast(
       this.gameId,
       JSON.stringify({

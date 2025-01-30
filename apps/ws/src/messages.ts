@@ -24,6 +24,8 @@ export const GAME_ALERT = 'alert'
 
 export const EXIT_GAME = 'exit_game'
 
+export const GAME_ENDED = 'game_ended'
+
 export const DRAW_OFFER = 'draw_offer'
 export const DRAW_ACCEPT = 'draw_accept'
 export const DRAW_REJECT = 'draw_reject'
