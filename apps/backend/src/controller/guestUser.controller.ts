@@ -36,6 +36,8 @@ export const createGuestUser = async(req: Request, res: Response) => {
          res.status(200).json({
            message: "Login successful",
            success: true,
+           user: guestUser,
+           token : token
          });
          return;
     } catch (e) {

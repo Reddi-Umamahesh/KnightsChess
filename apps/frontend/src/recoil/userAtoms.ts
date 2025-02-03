@@ -20,3 +20,8 @@ export const authState = atom<AuthState>({
     key: 'authState',
     default: { isAuthenticated: false , user : null}
 })
+
+export const tokenState = atom<string | null>({
+    key: "tokenState",
+    default: localStorage.getItem(USER_TOKEN) || null
+});
