@@ -13,7 +13,7 @@ const Game = () => {
   const def = useRecoilValue(authState);
   const user = def.user
   if (user == null) {
-    return <div></div>;
+    return <div>connecting..</div>;
   }
   // const navigate = useNavigate();
   const socket = useWebSocket();

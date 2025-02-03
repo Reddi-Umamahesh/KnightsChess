@@ -8,7 +8,7 @@ import { Label } from "@radix-ui/react-label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
-import { BaseUserInterface, user_api_endpoint, USER_TOKEN } from "../utils/constants";
+import { BaseUserInterface, user_api_endpoint} from "../utils/constants";
 import { authState } from "../recoil/userAtoms";
 
 import { jwtDecode } from "jwt-decode";
@@ -40,7 +40,8 @@ export const logout = async (
   setUser: any
 ) => {
   localStorage.removeItem("authToken");
-  localStorage.removeItem("user");
+  localStorage.removeItem("username");
+  localStorage.removeItem('userId')
   try {
     const res = await axios.get(`${user_api_endpoint}/logout`, {
       withCredentials: true,
@@ -120,6 +121,7 @@ const Form: React.FC<FormProps> = ({ bodyData, footerData, route, type }) => {
           isAuthenticated: true,
           user : decodedUser
         })
+      
         console.log(
           "User authenticated successfully with token: ",
          

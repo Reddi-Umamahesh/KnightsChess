@@ -4,7 +4,7 @@ import { Button } from "../components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useguestAuth } from "@/auth/guestAuth";
 import axios from "axios";
-import { api_endpoint } from "@/utils/constants";
+import { api_endpoint, USER_TOKEN } from "@/utils/constants";
 import { useSetRecoilState } from "recoil";
 import { authState } from "@/recoil/userAtoms";
 
@@ -29,7 +29,9 @@ const LandingPage: React.FC = () => {
             isAuthenticated: true,
             user: response.data.user,
           });
-          navigate("/home");
+          localStorage.setItem(USER_TOKEN , response.data.token)
+          console.log(response.data)
+          navigate("/game");
         }
       } catch (error) {
         console.log(error);
