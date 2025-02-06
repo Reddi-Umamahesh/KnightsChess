@@ -6,6 +6,7 @@ const code = process.env.SECRETCODE;
 export interface jwtUserClaims  {
 
     name: string,
+    email:string,
     userId: string,
     isGuest : boolean 
         

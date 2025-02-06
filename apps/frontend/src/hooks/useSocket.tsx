@@ -1,100 +1,48 @@
-import React, {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-  useRef,
-} from "react";
+// src/hooks/useWebSocket.ts
+import { USER_TOKEN } from "@/utils/constants";
+import { useEffect, useState } from "react";
 
-const WebSocketContext = createContext<WebSocket | null>(null);
+const WS_URL = "ws://localhost:8080";
 
-export const useSocket = (token: string | null) => {
+const useWebSocket = (wsUrl: string = WS_URL) => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const reconnectAttempts = useRef(0);
-  const isMounted = useRef(true);
 
-  const connect = useCallback(() => {
-    if (!token) return;
+  useEffect(() => {
+    // Grab the token from localStorage (or however you want to retrieve it)
+    const token = localStorage.getItem(USER_TOKEN);
 
-    const WS_URL = `ws://localhost:8080/?token=${token}`;
-    const ws = new WebSocket(WS_URL);
+    if (!token) {
+      console.error("No token found in localStorage. WebSocket not established.");
+      return;
+    }
+
+    // Create the full URL with token as a query parameter
+    const fullUrl = `${wsUrl}?token=${token}`;
+    const ws = new WebSocket(fullUrl);
 
     ws.onopen = () => {
-      console.log("WebSocket connected");
-      reconnectAttempts.current = 0;
-      if (isMounted.current) setSocket(ws);
-    };
-
-    ws.onclose = (event) => {
-      console.log("WebSocket disconnected", event.reason);
-      if (isMounted.current) setSocket(null);
-
-      // Exponential backoff reconnect
-      if (event.code !== 1000) {
-        // Don't reconnect if closed normally
-        const timeout = Math.min(
-          1000 * Math.pow(2, reconnectAttempts.current),
-          30000
-        );
-        setTimeout(() => {
-          if (isMounted.current && token) connect();
-        }, timeout);
-        reconnectAttempts.current += 1;
-      }
+      console.log("WebSocket connection opened.");
     };
 
     ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
+      console.error("WebSocket encountered an error:", error);
     };
 
-    return ws;
-  }, [token]);
+    ws.onclose = () => {
+      console.log("WebSocket connection closed.");
+    };
 
-  useEffect(() => {
-    isMounted.current = true;
-    const ws = connect();
+    // Save the socket instance in state
+    setSocket(ws);
 
+    // Cleanup function to close the socket when the component unmounts
     return () => {
-      isMounted.current = false;
-      reconnectAttempts.current = 0;
-      if (ws?.readyState === WebSocket.OPEN) {
-        ws.close(1000, "Component unmounted");
-      }
+      console.log("Cleaning up WebSocket connection.");
+      ws.close();
     };
-  }, [connect]);
+  }, [wsUrl]);
 
   return socket;
 };
 
-export const WebSocketProvider: React.FC<{
-  token: string | null;
-  children: ReactNode;
-}> = ({ token: initialToken, children }) => {
-  const [authToken, setAuthToken] = useState(initialToken);
-
-  // Handle token updates from localStorage
-  useEffect(() => {
-    const tokenFromStorage = localStorage.getItem("Token");
-    if (tokenFromStorage !== authToken) {
-      setAuthToken(tokenFromStorage);
-    }
-  }, [authToken]);
-
-  if (!authToken) {
-    return <>{children}</>; // Render children without WebSocket
-  }
-
-  const socket = useSocket(authToken);
-
-  return (
-    <WebSocketContext.Provider value={socket}>
-      {children}
-    </WebSocketContext.Provider>
-  );
-};
-
-export const useWebSocket = () => {
-  return useContext(WebSocketContext);
-};
+export default useWebSocket;

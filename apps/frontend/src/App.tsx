@@ -7,7 +7,7 @@ import { UserProvider } from "./auth/UserContext";
 import LoginForm from "./auth/Login";
 import RegisterForm from "./auth/RegisterForm";
 // import { getJWTTOKENFromLocalStorage } from "./lib/utils";
-import { WebSocketProvider } from "./hooks/useSocket";
+// import { WebSocketProvider } from "./hooks/useSocket";
 import { USER_TOKEN } from "./utils/constants";
 import Layout from "./components/Layout";
 import { tokenState } from "./recoil/userAtoms";
@@ -29,27 +29,23 @@ function App() {
   const appRouter = createBrowserRouter(
     [
       {
+        path: "/",
+        element: <LandingPage />,
+      },
+      {
+        path: "/login",
+        element: <LoginForm />,
+      },
+      {
+        path: "/signup",
+        element: <RegisterForm />,
+      },
+      {
         element: <Layout />,
         children: [
           {
-            path: "/",
-            element: <LandingPage />,
-          },
-          {
-            path: "/login",
-            element: <LoginForm />,
-          },
-          {
-            path: "/signup",
-            element: <RegisterForm />,
-          },
-          {
             path: "/game",
-            element: (
-              <WebSocketProvider key={token || undefined} token={token}>
-                <Game />
-              </WebSocketProvider>
-            ),
+            element: <Game />,
           },
         ],
       },

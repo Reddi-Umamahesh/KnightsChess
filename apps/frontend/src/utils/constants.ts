@@ -32,6 +32,7 @@ export const guest_api_endpoint = "http://localhost:3000/api/v1/guest";
 export const user_api_endpoint = "http://localhost:3000/api/v1/user"
 export const api_endpoint = "http://localhost:3000/api/v1";
 export const google_auth_endpoint = "http://localhost:3000/auth/google";
+export const ws_url = "ws://localhost:8080?token=";
 
 
 export const USER_TOKEN = 'user_token';
