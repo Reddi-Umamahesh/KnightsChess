@@ -15,7 +15,7 @@ wss.on("connection", function connection(ws, req) {
   const token: string = url.parse(req.url, true).query.token;
   const user = extractUser(token, ws);
   gameManager.addUSer(user);
-  ws.on("disconnect", () => gameManager.removeuser(ws));
+  ws.on("close", () => gameManager.removeuser(ws));
   ws.onclose = () => gameManager.removeuser(ws)
 });
 
