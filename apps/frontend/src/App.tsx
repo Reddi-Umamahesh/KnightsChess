@@ -1,20 +1,21 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import LandingPage from "./home/LandingPage";
-import Game from "./screens/Game";
-import { RecoilRoot, useRecoilState } from "recoil";
+import LandingPage from "./pages/Home/LandingPage";
+import { useRecoilState } from "recoil";
 import { ToastContainer } from "react-toastify";
-import { UserProvider } from "./auth/UserContext";
-import LoginForm from "./auth/Login";
-import RegisterForm from "./auth/RegisterForm";
+import "react-toastify/dist/ReactToastify.css";
+
 // import { getJWTTOKENFromLocalStorage } from "./lib/utils";
 // import { WebSocketProvider } from "./hooks/useSocket";
 import { USER_TOKEN } from "./utils/constants";
-import Layout from "./components/Layout";
+import Layout from "./components/layout/Layout";
 import { tokenState } from "./recoil/userAtoms";
 import { useEffect } from "react";
+import Login from "./features/auth/Login_Signup";
+import Home from "./pages/Home/Home";
+import HomePage from "./pages/Home/HomePage";
+import { Game } from "./pages/Game/Game";
 
 function App() {
-
   const [token, setToken] = useRecoilState(tokenState);
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
@@ -23,8 +24,8 @@ function App() {
       }
     };
     window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage" , handleStorageChange)
-  } , [setToken])
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [setToken]);
 
   const appRouter = createBrowserRouter(
     [
@@ -34,20 +35,15 @@ function App() {
       },
       {
         path: "/login",
-        element: <LoginForm />,
+        element: <Login />,
       },
       {
-        path: "/signup",
-        element: <RegisterForm />,
+        path: "/home",
+        element: <HomePage />,
       },
       {
-        element: <Layout />,
-        children: [
-          {
-            path: "/game",
-            element: <Game />,
-          },
-        ],
+        path: "/game/:id",
+        element: <Game />,
       },
     ],
     {
@@ -61,14 +57,12 @@ function App() {
     }
   );
   return (
-   
-      <UserProvider>
-        <div className=" w-full bg-[#312E2b]">
-          <RouterProvider router={appRouter} />
-        </div>
-        <ToastContainer />
-      </UserProvider>
-    
+    <>
+      <div className="min-h-screen w-full bg-black text-white font-sans">
+        <RouterProvider router={appRouter} />
+      </div>
+      <ToastContainer />
+    </>
   );
 }
 

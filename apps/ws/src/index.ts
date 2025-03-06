@@ -14,8 +14,13 @@ wss.on("connection", function connection(ws, req) {
   //@ts-ignore
   const token: string = url.parse(req.url, true).query.token;
   const user = extractUser(token, ws);
+  console.log(user.name);
+  if (!user) {
+    console.log("user not found");
+    ws.close();
+    return;
+  }
+  console.log("User extracted:", user);
   gameManager.addUSer(user);
   ws.on("close", () => gameManager.removeuser(ws));
-  ws.onclose = () => gameManager.removeuser(ws)
 });
-

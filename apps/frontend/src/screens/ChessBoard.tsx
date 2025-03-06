@@ -35,16 +35,15 @@ const ChessBoard: React.FC<props> = ({
   Chess,
   msg,
 }) => {
-  
   const { width } = useScreenSize();
   const def = useRecoilValue(authState);
-  const user = def.user
+  const user = def.user;
   console.log(msg);
   console.log(user);
   const { SquareWidth, BoardWidth } = getWidth(width);
   const [from, setFrom] = useState<String | null>(null);
   const [to, setTo] = useState<String | null>(null);
-  const isBlack = user && msg && user.userId === msg.blackPlayer.userId ? true : false;
+  const isBlack = user && msg && user.id === msg.blackPlayer.id ? true : false;
   const OppositePlayer = isBlack ? msg?.whitePlayer : msg?.whitePlayer;
 
   const handleClick = (
@@ -126,7 +125,7 @@ const ChessBoard: React.FC<props> = ({
     return color === "w" ? `${type.toUpperCase()} w.png` : `${type}.png`;
   };
   const currentTurn = Chess.turn();
-  console.log(msg , isBlack , OppositePlayer);
+  console.log(msg, isBlack, OppositePlayer);
   if (!socket) return <div className="h-screen w-full">...Connecting</div>;
   return (
     <div className="h-auto over">
@@ -162,9 +161,7 @@ const ChessBoard: React.FC<props> = ({
                   <div
                     onClick={() => handleClick(square, i, j)}
                     className={` relative flex items-center p-[4px] justify-center  text-sm font-medium ${
-                      isDarkSquare
-                        ? "bg-[#EBECD0] text-black"
-                        : "bg-[#739552] text-black"
+                      isDarkSquare ? "bg-purple-800/40 " : "bg-gray-800/60 "
                     }`}
                     key={j}
                     id={getReversedSquareID(i, j)}

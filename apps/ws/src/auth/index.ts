@@ -1,19 +1,24 @@
-import jwt from "jsonwebtoken"
-import { User } from "../SockerManager"
-import WebSocket from "ws"
+import jwt from "jsonwebtoken";
+// import { User } from "../SocketManager";
+import WebSocket from "ws";
+import { User } from "../types";
 
 const code = process.env.SECRETCODE;
-export interface jwtUserClaims  {
-
-    name: string,
-    email:string,
-    userId: string,
-    isGuest : boolean 
-        
+export interface jwtUserClaims {
+  name: string;
+  email: string;
+  id: string;
+  isGuest: boolean;
 }
 
-export const extractUser = (token: string , ws : WebSocket) => {
-    const decoded = jwt.verify(token, code || "secret_key")
-    const userClaims = decoded as jwtUserClaims
-    return new User(userClaims, ws);
-}
+export const extractUser = (token: string, ws: WebSocket) => {
+  const decoded = jwt.verify(token, code || "secret_key");
+  const userClaims = decoded as jwtUserClaims;
+  const user: User = {
+    id: userClaims.id,
+    name: userClaims.name,
+    socket: ws,
+    isGuest: userClaims.isGuest,
+  }
+  return user;
+};

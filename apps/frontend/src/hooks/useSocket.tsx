@@ -1,48 +1,47 @@
 // src/hooks/useWebSocket.ts
-import { USER_TOKEN } from "@/utils/constants";
+import { USER_TOKEN, ws_url } from "@/utils/constants";
 import { useEffect, useState } from "react";
 
-const WS_URL = "ws://localhost:8080";
 
-const useWebSocket = (wsUrl: string = WS_URL) => {
+
+const useWebSocket = () => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [token, setToken] = useState("");
+  useEffect(() => {
+    const storedToken = localStorage.getItem(USER_TOKEN) || "";
+    console.log("Stored token", storedToken);
+    setToken(storedToken);
+  }, []);
 
   useEffect(() => {
-    // Grab the token from localStorage (or however you want to retrieve it)
-    const token = localStorage.getItem(USER_TOKEN);
+    if (!token) return;
 
-    if (!token) {
-      console.error("No token found in localStorage. WebSocket not established.");
-      return;
+    const wsurl = `${ws_url}?token=${token}`;
+    console.log(wsurl)
+    const socket = new WebSocket(wsurl);
+    console.log("Initial readyState:", socket.readyState , socket.url);
+    setTimeout(() => console.log("After 5s, readyState:", socket.readyState), 5000);
+    console.log("Connected to websocket", socket);
+
+    socket.onopen = () => {
+      console.log("WebSocket opened, readyState:", socket.readyState);
+      setSocket(socket);
+      console.log("Connected to websocket",socket);
     }
-
-    // Create the full URL with token as a query parameter
-    const fullUrl = `${wsUrl}?token=${token}`;
-    const ws = new WebSocket(fullUrl);
-
-    ws.onopen = () => {
-      console.log("WebSocket connection opened.");
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
     };
-
-    ws.onerror = (error) => {
-      console.error("WebSocket encountered an error:", error);
-    };
-
-    ws.onclose = () => {
-      console.log("WebSocket connection closed.");
-    };
-
-    // Save the socket instance in state
-    setSocket(ws);
-
-    // Cleanup function to close the socket when the component unmounts
+    socket.onclose = (event) => {
+      console.log("WebSocket closed:", event.code, event.reason)
+      setSocket(null);
+    }
     return () => {
-      console.log("Cleaning up WebSocket connection.");
-      ws.close();
-    };
-  }, [wsUrl]);
-
-  return socket;
+      console.log("Cleaning up, closing socket");
+      socket.close();
+      setSocket(null);
+    }
+  }, [token]);
+  return socket
 };
 
 export default useWebSocket;
