@@ -5,7 +5,7 @@
   - You are about to drop the column `id` on the `Guest` table. All the data in the column will be lost.
   - A unique constraint covering the columns `[email]` on the table `Guest` will be added. If there are existing duplicate values, this will fail.
   - Added the required column `email` to the `Guest` table without a default value. This is not possible if the table is not empty.
-  - The required column `userId` was added to the `Guest` table with a prisma-level default value. This is not possible if the table is not empty. Please add this column as optional, then populate it before making it required.
+  - The required column `id` was added to the `Guest` table with a prisma-level default value. This is not possible if the table is not empty. Please add this column as optional, then populate it before making it required.
 
 */
 -- AlterTable
@@ -14,8 +14,8 @@ DROP COLUMN "id",
 ADD COLUMN     "email" TEXT NOT NULL,
 ADD COLUMN     "isGuest" BOOLEAN NOT NULL DEFAULT true,
 ADD COLUMN     "password" TEXT,
-ADD COLUMN     "userId" TEXT NOT NULL,
-ADD CONSTRAINT "Guest_pkey" PRIMARY KEY ("userId");
+ADD COLUMN     "id" TEXT NOT NULL,
+ADD CONSTRAINT "Guest_pkey" PRIMARY KEY ("id");
 
 -- AlterTable
 ALTER TABLE "User" ADD COLUMN     "isGuest" BOOLEAN NOT NULL DEFAULT false;

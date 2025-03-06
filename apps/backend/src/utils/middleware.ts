@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 const prisma = new PrismaClient();
 interface jwtPayload {
   id: string;
-  username: string;
+  name: string;
   email: string;
   isGuest: boolean;
 }
@@ -28,11 +28,11 @@ export const isAuthenticated = async (
     let user;
     if (decoded.isGuest === false) {
       user = await prisma.user.findUnique({
-        where: { userId: decoded.id },
+        where: { id: decoded.id },
       });
     } else {
-      user = await prisma.guest.findUnique({
-        where: { userId: decoded.id },
+      user = await prisma.user.findUnique({
+        where: { id: decoded.id },
       });
     }
 

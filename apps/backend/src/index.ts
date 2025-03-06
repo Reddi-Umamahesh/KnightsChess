@@ -1,27 +1,26 @@
 import express, { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-dotenv.config()
+dotenv.config();
 import cors from "cors";
-import guestRoute from './routes/guest.route'
-import userRoute from './routes/User.route'
-import authRoute from './routes/authCheck'
-import googleRouter from './auth'
+import guestRoute from "./routes/guest.route";
+import userRoute from "./routes/User.route";
+import authRoute from "./routes/authCheck";
+import googleRouter from "./auth";
 import passport from "passport";
-import { Strategy as GoogleStrategy, Profile } from 'passport-google-oauth20';
+import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
-const app = express()
-const port = 3000
+const app = express();
+const port = 3000;
 
-const session = require('express-session');
-import { Prisma, PrismaClient, User } from '@prisma/client'
+const session = require("express-session");
+import { Prisma, PrismaClient, User } from "@prisma/client";
 
 import { error } from "console";
 import { isAuthenticated } from "./utils/middleware";
-app.use(express.json())
+app.use(express.json());
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }))
-
+app.use(express.urlencoded({ extended: true }));
 
 const prisma = new PrismaClient();
 const corsOptions = {
@@ -30,25 +29,20 @@ const corsOptions = {
   credentials: true,
 };
 
-
-
 app.use(cors(corsOptions));
 
 app.use(
   session({
     secret: process.env.SECRETCODE,
-    resave: false , 
-    saveUninitialized : true
+    resave: false,
+    saveUninitialized: true,
   })
 );
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-
-
 passport.use(
-
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID || "your_id",
@@ -59,13 +53,13 @@ passport.use(
       try {
         console.log("hi");
         let user = await prisma.user.findUnique({
-          where: { userId: profile.id },
+          where: { id: profile.id },
         });
         if (!user) {
           user = await prisma.user.create({
             data: {
-              userId: profile.id,
-              Username: profile.displayName,
+              id: profile.id,
+              name: profile.displayName,
               email: profile.emails ? profile.emails[0].value : "",
               isGuest: false,
             },
@@ -81,33 +75,29 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
-  console.log(user)
+  console.log(user);
   done(null, user);
 });
 
 passport.deserializeUser(async (id: any, done: any) => {
   try {
-    console.log(id)
-    const user = await prisma.user.findUnique({ where: { userId: id.userId } });
+    console.log(id);
+    const user = await prisma.user.findUnique({ where: { id: id.id } });
     done(null, user);
   } catch (error) {
     done(error);
   }
 });
 
-
-
 app.listen(port, () => {
-    console.log("app is listening")
-})
+  console.log("app is listening");
+});
 
-
-app.use("/api/v1/guest" , guestRoute)
-app.use("/api/v1/User", userRoute)
-app.use("/api/v1", authRoute)
+app.use("/api/v1/guest", guestRoute);
+app.use("/api/v1/User", userRoute);
+app.use("/api/v1", authRoute);
 app.use("/auth", googleRouter);
 
 // app.get("/profile", isAuthenticated, (req: Request, res: Response) => {
 //   res.json(req.user);
 // });
-

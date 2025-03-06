@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Move" ALTER COLUMN "piece" DROP NOT NULL;

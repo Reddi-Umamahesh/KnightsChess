@@ -1,3 +1,5 @@
+import { WebSocket } from "ws";
+
 export type GAME_RESULT = "WHITE_WINS" | "BLACK_WINS" | "DRAW";
 export type GAME_STATUS =
   | "PLAYER_EXIT"
@@ -38,3 +40,9 @@ export const getTime = (varient :VARIENT) => {
     }
 }
 
+export type User = {
+    id: string;
+    name: string;
+    socket: WebSocket;
+    isGuest: boolean;
+}

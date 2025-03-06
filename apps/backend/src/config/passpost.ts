@@ -1,4 +1,3 @@
-
 // import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";
 // import express from 'express'
 // const passport = require("passport");
@@ -9,7 +8,6 @@
 // import { Prisma, PrismaClient, User } from "@prisma/client";
 
 // const prisma = new PrismaClient();
-
 
 // passport.use(
 //   new GoogleStrategy(
@@ -22,12 +20,12 @@
 //       try {
 //         console.log("hi")
 //         let user = await prisma.user.findUnique({
-//           where: { userId: profile.id },
+//           where: { id: profile.id },
 //         });
 //         if (!user) {
 //           user = await prisma.user.create({
 //             data: {
-//               userId: profile.id,
+//               id: profile.id,
 //               Username: profile.displayName,
 //               email: profile.emails ? profile.emails[0].value : "",
 //             },
@@ -43,12 +41,12 @@
 // );
 
 // passport.serializeUser((user: User, done: any) => {
-//   done(null, user.userId);
+//   done(null, user.id);
 // });
 
 // passport.deserialzeUser(async (id: string, done: any) => {
 //   try {
-//     const user = await prisma.user.findUnique({ where: { userId: id } });
+//     const user = await prisma.user.findUnique({ where: { id: id } });
 //     done(null, user);
 //   } catch (error) {
 //     done(error);

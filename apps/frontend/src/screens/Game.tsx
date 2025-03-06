@@ -10,7 +10,7 @@ import useWebSocket from "@/hooks/useSocket";
 const Game = () => {
   // Always call hooks at the top of your component
   const auth = useRecoilValue(authState);
-  const socket = useWebSocket();
+  const { socket } = useWebSocket();
   const user = auth.user;
 
   // These hooks will always run, regardless of user/socket state
@@ -24,6 +24,7 @@ const Game = () => {
     socket.onmessage = (event: MessageEvent) => {
       const message = JSON.parse(event.data);
       console.log(message, "from hereeee");
+      console.log(message.type);
       switch (message.type) {
         case GAME_ADDED:
           console.log("game added");

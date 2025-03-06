@@ -8,8 +8,8 @@ datasource db {
 }
 
 model User {
-  userId       String  @id @default(uuid())
-  Username     String
+  id       String  @id @default(uuid())
+  name     String
   password     String?
   email        String  @unique
   gamesAsBlack Game[]  @relation("BlackGames")
@@ -28,8 +28,8 @@ model Game {
   moves         Move[]
   whitePlayerTimeConsumed Int?
   blackPlayerTimeConsumed Int?
-  blackPlayer   User     @relation("BlackGames", fields: [blackPlayerId], references: [userId])
-  whitePlayer   User     @relation("WhiteGames", fields: [whitePlayerId], references: [userId])
+  blackPlayer   User     @relation("BlackGames", fields: [blackPlayerId], references: [id])
+  whitePlayer   User     @relation("WhiteGames", fields: [whitePlayerId], references: [id])
 }
 
 model Move {
@@ -37,7 +37,7 @@ model Move {
   gameId   String
   from    String
   to String
-  piece  String
+  piece  String?
   promotion     String?
   captured  String?
   moveNumber  Int
@@ -46,10 +46,3 @@ model Move {
   game     Game     @relation(fields: [gameId], references: [gameId])
 }
 
-model Guest {
-  userId    String  @id @default(uuid()) 
-  Username String
-  email     String  @unique
-  password  String?
-  isGuest   Boolean @default(true)
-}

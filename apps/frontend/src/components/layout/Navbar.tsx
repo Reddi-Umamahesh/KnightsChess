@@ -1,4 +1,3 @@
-
 import { authState, tokenState } from "@/recoil/userAtoms";
 import { user_api_endpoint } from "@/utils/constants";
 import axios from "axios";
@@ -9,13 +8,13 @@ import { PiHandWavingDuotone } from "react-icons/pi";
 const Navbar = () => {
   const auth = useRecoilValue(authState);
   const setAuthState = useSetRecoilState(authState);
-  const setTokenState = useSetRecoilState(tokenState)
-  const handleLogout = async() => {
+  const setTokenState = useSetRecoilState(tokenState);
+  const handleLogout = async () => {
     // Remove the token from localStorage (adjust the key if needed)
     localStorage.removeItem("USER_TOKEN");
     localStorage.removeItem("authToken");
     localStorage.removeItem("username");
-    localStorage.removeItem("userId");
+    localStorage.removeItem("id");
     const nagivate = useNavigate();
     // Update the auth state to log out the user
     try {
@@ -25,14 +24,13 @@ const Navbar = () => {
       if (res.data.success) {
         toast.success("Logged out successfully");
       }
-       setAuthState({
-         isAuthenticated: false,
-         user: null,
-       });
-      setTokenState(null)
-       
+      setAuthState({
+        isAuthenticated: false,
+        user: null,
+      });
+      setTokenState(null);
+
       console.log(res);
-      
 
       nagivate("/");
     } catch (error) {
@@ -48,8 +46,7 @@ const Navbar = () => {
         toast.error("Unexpected error occured");
       }
     }
-   
-    };
+  };
   return (
     <nav className="bg-gray-800 p-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -61,7 +58,7 @@ const Navbar = () => {
             <span>
               {auth.user ? (
                 <span>
-                  <PiHandWavingDuotone /> {auth.user.username}
+                  <PiHandWavingDuotone /> {auth.user.name}
                 </span>
               ) : (
                 ""

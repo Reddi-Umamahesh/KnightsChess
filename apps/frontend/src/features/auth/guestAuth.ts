@@ -7,7 +7,9 @@ import {
   
 } from "@/utils/constants";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useSetRecoilState } from "recoil";
 
 export const useguestAuth = () => {
@@ -23,19 +25,22 @@ export const useguestAuth = () => {
       const response = await axios.post(url, {} , { withCredentials: true });
 
       if (response.data.success && response.data.token) {
-        const decodedUser: BaseUserInterface = await response.data.user
+        const decodedUser: BaseUserInterface = jwtDecode(
+          response.data.token
+        );
         setAuthState({
         isAuthenticated: true,
         user: decodedUser,
         });
-        localStorage.setItem(USER_TOKEN , response.data.token)
+        localStorage.setItem(USER_TOKEN, response.data.token)
          console.log(
            "User authenticated successfully with token: ",
            decodedUser,
            localStorage.getItem(USER_TOKEN),
            response.data.token
          );
-         navigate("/game");
+         toast.success(response.data.message)
+         navigate("/home");
 
       }
       

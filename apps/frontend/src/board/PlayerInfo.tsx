@@ -63,7 +63,7 @@ const PlayerInfo: React.FC<props> = ({ player, height, width, isBlack , isActive
     >
       <div className="flex gap-3 text-center">
         <img className="h-10 " src={"guest-user.jpg"} alt="" />
-        {player?.username || "Guest_knight"}
+        {player?.name || "Guest_knight"}
       </div>
       <div
         className={`w-20 ${
