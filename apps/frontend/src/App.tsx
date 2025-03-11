@@ -39,7 +39,7 @@ function App() {
       },
       {
         path: "/home",
-        element: <HomePage />,
+        element: <HomePage/>,
       },
       {
         path: "/game/:id",

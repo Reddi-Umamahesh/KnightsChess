@@ -27,6 +27,9 @@ function HomePage() {
     const socket  = useWebSocket();
     const setGame = useSetRecoilState(GameState);
 
+
+
+
     useEffect(() => {
         console.log(socket)
         if (!socket) {
@@ -73,9 +76,7 @@ function HomePage() {
         };
 
         socket.addEventListener("message", handleMessage);
-        return () => {
-            socket.removeEventListener("message", handleMessage);
-        };
+
     }, [socket]);
 
     if (waitingForGame) {

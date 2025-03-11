@@ -16,17 +16,18 @@ const useWebSocket = () => {
   useEffect(() => {
     if (!token) return;
 
-    const wsurl = `${ws_url}?token=${token}`;
+    // const wsurl = `${ws_url}?token=${token}`;
+    const wsurl = `ws://localhost:8080?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjhhZDA1NThjLTY0OTEtNDUwZC05ZTU3LTNlMjE1NDM0Y2M1YSIsImVtYWlsIjoidUBnbWFpbC5jb20iLCJuYW1lIjoidW1hbWFoZXNoIiwiaXNHdWVzdCI6ZmFsc2UsImlhdCI6MTc0MTM1MjAwMCwiZXhwIjoxNzQxMzcwMDAwfQ.sY0kARETyYkILH8dBuqCJva7Jadw5jGqS1X5Vqgbco4`;
     console.log(wsurl)
     const socket = new WebSocket(wsurl);
-    console.log("Initial readyState:", socket.readyState , socket.url);
+    console.log("Initial readyState:", socket.readyState, socket.url);
     setTimeout(() => console.log("After 5s, readyState:", socket.readyState), 5000);
     console.log("Connected to websocket", socket);
 
     socket.onopen = () => {
       console.log("WebSocket opened, readyState:", socket.readyState);
       setSocket(socket);
-      console.log("Connected to websocket",socket);
+      console.log("Connected to websocket", socket);
     }
     socket.onerror = (error) => {
       console.error("WebSocket error:", error);

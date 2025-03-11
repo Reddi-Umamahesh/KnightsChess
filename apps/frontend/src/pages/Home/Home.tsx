@@ -41,7 +41,7 @@ function Home() {
 
   useEffect(() => {
     if (!socket) {
-      console.log("returing")
+      console.log("returning")
       return;
     }
     const handleMessage = (event: MessageEvent) => {

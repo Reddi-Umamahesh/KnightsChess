@@ -41,9 +41,7 @@ export const useguestAuth = () => {
          );
          toast.success(response.data.message)
          navigate("/home");
-
       }
-      
     } catch (e) {
       console.log(e);
     }
