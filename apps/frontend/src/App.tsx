@@ -3,15 +3,10 @@ import LandingPage from "./pages/Home/LandingPage";
 import { useRecoilState } from "recoil";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-// import { getJWTTOKENFromLocalStorage } from "./lib/utils";
-// import { WebSocketProvider } from "./hooks/useSocket";
 import { USER_TOKEN } from "./utils/constants";
-import Layout from "./components/layout/Layout";
 import { tokenState } from "./recoil/userAtoms";
 import { useEffect } from "react";
 import Login from "./features/auth/Login_Signup";
-import Home from "./pages/Home/Home";
 import HomePage from "./pages/Home/HomePage";
 import { Game } from "./pages/Game/Game";
 
@@ -21,6 +16,8 @@ function App() {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === USER_TOKEN) {
         setToken(e.newValue);
+        if (token) {      
+        }
       }
     };
     window.addEventListener("storage", handleStorageChange);

@@ -12,13 +12,17 @@ export interface jwtUserClaims {
 }
 
 export const extractUser = (token: string, ws: WebSocket) => {
-  const decoded = jwt.verify(token, code || "secret_key");
-  const userClaims = decoded as jwtUserClaims;
-  const user: User = {
-    id: userClaims.id,
-    name: userClaims.name,
-    socket: ws,
-    isGuest: userClaims.isGuest,
+  try {
+    const decoded = jwt.verify(token, code || "secret_key");
+    const userClaims = decoded as jwtUserClaims;
+    const user: User = {
+      id: userClaims.id,
+      name: userClaims.name,
+      socket: ws,
+      isGuest: userClaims.isGuest,
+    };
+    return user;
+  } catch (e) {
+    console.log(e);
   }
-  return user;
 };

@@ -41,7 +41,7 @@ const UtiliyBox: React.FC = () => {
   if (token == null) {
     return 
   }
-  const socket = useWebSocket();
+  const { socket } = useWebSocket();
   console.log(socket);
   return (
     <div>

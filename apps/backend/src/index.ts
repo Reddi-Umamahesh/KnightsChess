@@ -1,7 +1,5 @@
 import express, { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-dotenv.config();
 import cors from "cors";
 import guestRoute from "./routes/guest.route";
 import userRoute from "./routes/User.route";
@@ -10,6 +8,9 @@ import googleRouter from "./auth";
 import passport from "passport";
 import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
+import * as dotenv from "dotenv";
+dotenv.config();
+
 const app = express();
 const port = 3000;
 

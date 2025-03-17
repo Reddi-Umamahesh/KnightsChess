@@ -1,4 +1,5 @@
 
+import { GAME_RESULT } from "@/utils/constants";
 import { Move } from "chess.js";
 
 
@@ -16,8 +17,9 @@ export interface Game {
   blackPlayer?: Player;
   fen?: string;
   moves?: Move[];
+  varient?: "",
   status?: string;
-  result?: string | null;
+  result?: GAME_RESULT;
   timer1?: number;
   timer2?: number;
 }

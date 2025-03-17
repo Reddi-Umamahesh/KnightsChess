@@ -58,3 +58,4 @@ export const isCastling = (board: Chess, from: Square, to: Square) => {
     }
     return false;
 }
+

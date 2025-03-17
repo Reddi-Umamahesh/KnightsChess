@@ -1,72 +1,56 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from 'react-router-dom';
-import {
-    Trophy, 
-    ChevronRight,
-    Menu,
-} from "lucide-react";
-import { authState } from "@/recoil/userAtoms";
-import { useRecoilValue, useSetRecoilState } from "recoil";
-import handleLogout from "@/features/auth/Logout";
+import  { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {  useSetRecoilState } from "recoil";
+import { GameState } from "@/recoil/gameAtom";
+import { Game as GameType } from "@/hooks/gameStore";
 import useWebSocket from "@/hooks/useSocket";
 import { toast } from "react-toastify";
-import { GAME_ADDED, INIT_GAME } from "@/utils/constants";
-import { Game as GameType } from "@/hooks/gameStore";
-import { GameState } from "@/recoil/gameAtom";
+import { CREATE_ROOM, GAME_ADDED, GAME_MODE, INIT_GAME, JOIN_ROOM } from "@/utils/constants";
 import LoadingGame from "@/components/chess/LoadingGame";
-import PrivateRoomDialog from '@/components/chess/PrivateRoomDialog';
+import PrivateRoomDialog from "@/components/chess/PrivateRoomDialog";
+import Header from "@/components/home/Header";
 
+import { ChevronRight, Trophy } from "lucide-react";
 
 function HomePage() {
-    const [activeTab, setActiveTab] = useState('Play');
+    const [activeTab, setActiveTab] = useState("Play");
     const [showPrivateDialog, setShowPrivateDialog] = useState(false);
-    const navigate = useNavigate();
     const [waitingForGame, setWaitingForGame] = useState(false);
-    const auth = useRecoilValue(authState);
-    const user = auth.user;
-    const socket  = useWebSocket();
+    const [waitingMessage, setWaitingMessage] = useState("");
+    const navigate = useNavigate()
+    const { socket } = useWebSocket();
     const setGame = useSetRecoilState(GameState);
 
-
-
-
     useEffect(() => {
-        console.log(socket)
-        if (!socket) {
-            console.log("WebSocket is not available")
-            return;
-        }
-        console.log("continuing in the home page")
+        if (!socket) return;
 
         const handleMessage = (event: MessageEvent) => {
             try {
                 const message = JSON.parse(event.data);
                 const msgType = message.type;
                 if (msgType === GAME_ADDED) {
-                    console.log("GAME_ADDED received – waiting for opponent...");
                     setWaitingForGame(true);
+                    setWaitingMessage(message.payload.message);
                 } else if (msgType === INIT_GAME) {
-                    console.log("INIT_GAME received – processing game and navigating");
                     const gameId = message.payload?.gameId;
-                    const payload = message.payload;
                     const newgame: GameType = {
                         gameId,
-                        game_type: payload.varient,
+                        game_type: message.payload.varient,
                         moveCount: 0,
-                        whitePlayer: payload.whitePlayer,
-                        blackPlayer: payload.blackPlayer,
-                        fen: payload.fen,
+                        whitePlayer: message.payload.whitePlayer,
+                        blackPlayer: message.payload.blackPlayer,
+                        fen: message.payload.fen,
                         moves: [],
                         status: "IN_PROGRESS",
+                        varient: message.payload.varient,
                         result: null,
-                        timer1: payload.player1_time,
-                        timer2: payload.player2_time,
+                        timer1: message.payload.player1_time,
+                        timer2: message.payload.player2_time,
                     };
                     localStorage.setItem("current_game", JSON.stringify(newgame));
-                    setGame({
-                        gameId: newgame.gameId,
-                        game: newgame,
-                    });
+                    localStorage.setItem("reload", "1");
+                    console.log(newgame)
+                    setGame({ gameId: newgame.gameId, game: newgame });
                     setWaitingForGame(false);
                     navigate(`/game/${gameId}`);
                 }
@@ -76,216 +60,197 @@ function HomePage() {
         };
 
         socket.addEventListener("message", handleMessage);
-
+        return () => {
+            socket.removeEventListener("message", handleMessage);
+        };
     }, [socket]);
 
-    if (waitingForGame) {
-        return <LoadingGame />;
-    }
-
-    if (!socket) {
-        return <LoadingGame/>;
-    }
-
-
-    const handleGameModeClick = (mode: 'bullet' | 'blitz' | 'classic') => {
-        console.log("Requesting new game...");
+    const handleGameModeClick = (mode:GAME_MODE) => {
         if (!socket) {
             toast.error("Connecting to server...");
             return;
         }
-        console.log("Sending INIT_GAME message to server");
-        socket.send(JSON.stringify({ type: INIT_GAME }));
+        socket.send(JSON.stringify({ type: INIT_GAME , varient :mode }));
     };
-
-
+    const handleCreateRoom = (mode:GAME_MODE) => {
+        if (!socket) {
+            toast.error("Connecting to server...");
+            return;
+        }
+        setWaitingForGame(true)
+        socket.send(JSON.stringify({ type: CREATE_ROOM, varient: mode }));
+    };
+    const handleJoinRoom = (roomId :string) => {
+        if (!socket) {
+            toast.error("Connecting to server...");
+            return;
+        }
+        socket.send(JSON.stringify({ type: JOIN_ROOM, roomId : roomId }));
+    };
     const handlePrivateRoomClick = () => {
         setShowPrivateDialog(true);
     };
 
+    if (waitingForGame) {
+        return <LoadingGame message={waitingMessage} />;
+    }
+
+    if (!socket) {
+        return <LoadingGame message="login failed please login again!" />;
+    }
+
     return (
-        <div>
-            {/* Mobile header with menu */}
-            <header className="p-4 flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                    <div className="relative">
-                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-700">
-                            <img
-                                src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80"
-                                alt="User avatar"
-                                className="w-full h-full object-cover"
-                            />
+        <div className="min-h-screen bg-black">
+            <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-8">
+                <Header />
+                <main className="pb-8">
+                    <div className="flex justify-between items-start mb-10">
+                        <div className="max-w-lg">
+                            <h1 className="text-4xl font-bold mb-3 text-white">Be the new ChessMaster.</h1>
+                            <p className="text-lg text-gray-300">Play challenges, battle with friends and enter tournaments!</p>
+                        </div>
+                        <div className="text-yellow-400">
+                            <Trophy size={48} />
                         </div>
                     </div>
-                    <div>
-                        <p className="font-medium">Garreth</p>
-                        <div className="flex items-center">
-                            <div className="w-4 h-4 rounded-full bg-yellow-400 mr-1"></div>
-                            <span className="text-sm">10,000</span>
-                        </div>
+                    {/* Navigation tabs */}
+                    <div className="flex space-x-8 mb-10 border-b border-gray-800 pb-2 overflow-x-auto">
+                        {['Play', 'Tournaments', 'Learn', 'Leaderboard'].map((tab) => (
+                            <button
+                                key={tab}
+                                className={`pb-2 text-lg ${activeTab === tab
+                                        ? 'text-yellow-400 font-medium border-b-2 border-yellow-400'
+                                        : 'text-gray-400'
+                                    }`}
+                                onClick={() => setActiveTab(tab)}
+                            >
+                                {tab}
+                            </button>
+                        ))}
                     </div>
-                </div>
-                <button className="text-white">
-                    <Menu size={24} />
-                </button>
-            </header>
 
-            {/* Main content */}
-            <main className="px-4 pb-8">
-                {/* Hero section */}
-                <div className="flex justify-between items-start mb-6">
-                    <div className="max-w-xs">
-                        <h1 className="text-2xl font-bold mb-1">Be the new ChessMaster.</h1>
-                        <p className="text-sm text-gray-300">Play challenges, battle with friends and enter tournaments!</p>
-                    </div>
-                    <div className="text-yellow-400">
-                        <Trophy size={40} />
-                    </div>
-                </div>
+                    {/* <Tabs activeTab={activeTab} setActiveTab={setActiveTab} /> */}
 
-                {/* Navigation tabs */}
-                <div className="flex space-x-6 mb-6 border-b border-gray-800 pb-2 overflow-x-auto">
-                    {['Play', 'Tournaments', 'Learn', 'Leaderboard'].map((tab) => (
-                        <button
-                            key={tab}
-                            className={`pb-2 ${activeTab === tab
-                                    ? 'text-yellow-400 font-medium border-b-2 border-yellow-400'
-                                    : 'text-gray-400'
-                                }`}
-                            onClick={() => setActiveTab(tab)}
-                        >
-                            {tab}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Content based on active tab */}
-                {activeTab === 'Play' && (
-                    <div className="grid grid-cols-12 gap-4">
-                        {/* Bullet mode - takes up left half */}
-                        <div
-                            className="col-span-12 md:col-span-6 bg-[#2196F3] rounded-lg p-5 relative overflow-hidden h-64 md:h-96 cursor-pointer"
-                            onClick={() => handleGameModeClick('bullet')}
-                        >
-                            <div className="relative z-10">
-                                <h2 className="text-xl font-bold mb-2">Bullet</h2>
-                                <p className="text-sm opacity-90">These two lines explains what each game is like.</p>
-                            </div>
-                            <div className="absolute bottom-4 right-4 bg-black bg-opacity-20 rounded-full p-2">
-                                <ChevronRight size={24} />
-                            </div>
-                            <div className="absolute right-0 bottom-0 opacity-20">
-                                <svg width="120" height="120" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" fill="currentColor" />
-                                    <path d="M12 11C13.1046 11 14 10.1046 14 9C14 7.89543 13.1046 7 12 7C10.8954 7 10 7.89543 10 9C10 10.1046 10.8954 11 12 11Z" fill="currentColor" />
-                                    <path d="M12 12C9.33 12 7 14.33 7 17H17C17 14.33 14.67 12 12 12Z" fill="currentColor" />
-                                </svg>
-                            </div>
-                        </div>
-
-                        {/* Right column with Blitz and Classic stacked */}
-                        <div className="col-span-12 md:col-span-6 grid grid-rows-2 gap-4">
-                            {/* Blitz mode */}
+                    {activeTab === 'Play' && (
+                        <div className="grid grid-cols-12 gap-6">
                             <div
-                                className="bg-[#4CAF50] rounded-lg p-5 relative overflow-hidden h-40 md:h-44 cursor-pointer"
-                                onClick={() => handleGameModeClick('blitz')}
+                                className="col-span-12 lg:col-span-6 bg-[#2196F3] rounded-lg p-6 relative overflow-hidden h-64 lg:h-[400px] cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => handleGameModeClick('RAPID')}
                             >
                                 <div className="relative z-10">
-                                    <h2 className="text-xl font-bold mb-2">Blitz</h2>
-                                    <p className="text-sm opacity-90">These two lines explains what each game is like.</p>
+                                    <h2 className="text-2xl lg:text-3xl font-bold mb-3">Rapid</h2>
+                                    <p className="text-lg opacity-90">Take your time and play deep strategic games</p>
                                 </div>
-                                <div className="absolute bottom-4 right-4 bg-black bg-opacity-20 rounded-full p-2">
-                                    <ChevronRight size={24} />
+                                <div className="absolute bottom-6 right-6 bg-black bg-opacity-20 rounded-full p-3">
+                                    <ChevronRight size={28} />
                                 </div>
-                                <div className="absolute right-0 bottom-0 opacity-20">
-                                    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M19 5L17.5 9H20V19H4V9H6.5L5 5H19ZM6.5 11H4.5V17H19.5V11H17.5L19 7H7L8.5 11H15.5L14 7H10L11.5 11H6.5Z" fill="currentColor" />
-                                    </svg>
+                                {/* Replaced SVG with image asset */}
+                                <div className="absolute right-0 bottom-0 opacity-40 overflow-hidden">
+                                    <img
+                                        src="/src/assets/knight.png"
+                                        alt="Chess Background"
+                                        className="h-96 w-auto object-cover object-top sm:h-72"
+                                    />
                                 </div>
                             </div>
 
-                            {/* Classic mode */}
+                            {/* Right column with Blitz and Classic stacked */}
+                            <div className="col-span-12 lg:col-span-6 grid grid-rows-2 gap-6">
+                                <div
+                                    className="bg-[#4CAF50] rounded-lg p-6 relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                                    onClick={() => handleGameModeClick('BLITZ')}
+                                >
+                                    <div className="relative z-10">
+                                        <h2 className="text-2xl font-bold mb-3">Blitz</h2>
+                                        <p className="text-lg opacity-90">Fast-paced 5-minute games to test your speed!</p>
+                                    </div>
+                                    <div className="absolute bottom-6 right-6 bg-black bg-opacity-20 rounded-full p-3">
+                                        <ChevronRight size={28} />
+                                    </div>
+                                    <div className="absolute right-0 bottom-0 opacity-40 overflow-hidden">
+                                        <img
+                                            src="/src/assets/rook.png"
+                                            alt="Chess Background"
+                                            className="w-36 h-40 object-cover object-top"
+                                        />
+                                    </div>
+
+                                </div>
+                                <div
+                                    className="bg-[#FFEB3B] rounded-lg p-6 relative overflow-hidden text-black cursor-pointer hover:opacity-90 transition-opacity"
+                                    onClick={() => handleGameModeClick('BULLET')}
+                                >
+                                    <div className="relative z-10">
+                                        <h2 className="text-2xl font-bold mb-3">Bullet</h2>
+                                        <p className="text-lg opacity-90">Super-fast chess with only 1 minute per player!</p>
+                                    </div>
+                                    <div className="absolute bottom-6 right-6 bg-black bg-opacity-20 rounded-full p-3">
+                                        <ChevronRight size={28} className="text-black" />
+                                    </div>
+                                    <div className="absolute right-0 bottom-0 opacity-40 overflow-hidden">
+                                        <img
+                                            src="/src/assets/queen.png"
+                                            alt="Chess Background"
+                                            className="w-36 h-40 object-cover object-top"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Private Chess Room - spans full width */}
                             <div
-                                className="bg-[#FFEB3B] rounded-lg p-5 relative overflow-hidden h-40 md:h-44 text-black cursor-pointer"
-                                onClick={() => handleGameModeClick('classic')}
+                                className="col-span-12 bg-[#9C27B0] rounded-lg p-6 relative overflow-hidden h-48 cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={handlePrivateRoomClick}
                             >
                                 <div className="relative z-10">
-                                    <h2 className="text-xl font-bold mb-2">Classic</h2>
-                                    <p className="text-sm opacity-90">These two lines explains what each game is like.</p>
+                                    <h2 className="text-2xl font-bold mb-3">Private Chess Room</h2>
+                                    <p className="text-lg opacity-90">Create a game, and invite your friends to battle it out!</p>
                                 </div>
-                                <div className="absolute bottom-4 right-4 bg-black bg-opacity-20 rounded-full p-2">
-                                    <ChevronRight size={24} className="text-black" />
+                                <div className="absolute bottom-6 right-6 bg-black bg-opacity-20 rounded-full p-3">
+                                    <ChevronRight size={28} />
                                 </div>
                                 <div className="absolute right-0 bottom-0 opacity-20">
-                                    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M12 2L8 6H16L12 2Z" fill="currentColor" />
-                                        <path d="M9 7V13H15V7H9Z" fill="currentColor" />
-                                        <path d="M8 14L6 17H18L16 14H8Z" fill="currentColor" />
-                                        <path d="M5 18V22H19V18H5Z" fill="currentColor" />
+                                    <svg width="200" height="200" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M17 3H7C5.9 3 5 3.9 5 5V21L12 18L19 21V5C19 3.9 18.1 3 17 3ZM17 18L12 15.82L7 18V5H17V18Z" fill="currentColor" />
                                     </svg>
                                 </div>
                             </div>
                         </div>
+                    )}
 
-                        {/* Private Chess Room - spans full width */}
-                        <div
-                            className="col-span-12 bg-[#9C27B0] rounded-lg p-5 relative overflow-hidden h-40 cursor-pointer"
-                            onClick={handlePrivateRoomClick}
-                        >
-                            <div className="relative z-10">
-                                <h2 className="text-xl font-bold mb-2">Private Chess Room</h2>
-                                <p className="text-sm opacity-90">Create a game, and invite your friends to battle it out!</p>
-                            </div>
-                            <div className="absolute bottom-4 right-4 bg-black bg-opacity-20 rounded-full p-2">
-                                <ChevronRight size={24} />
-                            </div>
-                            <div className="absolute right-0 bottom-0 opacity-20">
-                                <svg width="160" height="160" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M17 3H7C5.9 3 5 3.9 5 5V21L12 18L19 21V5C19 3.9 18.1 3 17 3ZM17 18L12 15.82L7 18V5H17V18Z" fill="currentColor" />
-                                </svg>
+                    {activeTab === "Tournaments" && (
+                        <div className="flex flex-col items-center justify-center h-64">
+                            <div className="text-center">
+                                <h2 className="text-2xl font-bold mb-4">Tournaments</h2>
+                                <p className="text-gray-400">No active tournaments at the moment.</p>
+                                <p className="text-gray-400">Check back later for upcoming events!</p>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {/* Tournaments Tab Content */}
-                {activeTab === 'Tournaments' && (
-                    <div className="flex flex-col items-center justify-center h-64">
-                        <div className="text-center">
-                            <h2 className="text-2xl font-bold mb-4">Tournaments</h2>
-                            <p className="text-gray-400">No active tournaments at the moment.</p>
-                            <p className="text-gray-400">Check back later for upcoming events!</p>
+                    {activeTab === "Learn" && (
+                        <div className="flex flex-col items-center justify-center h-64">
+                            <div className="text-center">
+                                <h2 className="text-2xl font-bold mb-4">Chess Learning Center</h2>
+                                <p className="text-gray-400">Tutorials and lessons coming soon.</p>
+                                <p className="text-gray-400">Master your chess skills with our guided lessons.</p>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {/* Learn Tab Content */}
-                {activeTab === 'Learn' && (
-                    <div className="flex flex-col items-center justify-center h-64">
-                        <div className="text-center">
-                            <h2 className="text-2xl font-bold mb-4">Chess Learning Center</h2>
-                            <p className="text-gray-400">Tutorials and lessons coming soon.</p>
-                            <p className="text-gray-400">Master your chess skills with our guided lessons.</p>
+                    {activeTab === "Leaderboard" && (
+                        <div className="flex flex-col items-center justify-center h-64">
+                            <div className="text-center">
+                                <h2 className="text-2xl font-bold mb-4">Global Leaderboard</h2>
+                                <p className="text-gray-400">Top players will be displayed here.</p>
+                                <p className="text-gray-400">Compete to see your name at the top!</p>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </main>
+            </div>
 
-                {/* Leaderboard Tab Content */}
-                {activeTab === 'Leaderboard' && (
-                    <div className="flex flex-col items-center justify-center h-64">
-                        <div className="text-center">
-                            <h2 className="text-2xl font-bold mb-4">Global Leaderboard</h2>
-                            <p className="text-gray-400">Top players will be displayed here.</p>
-                            <p className="text-gray-400">Compete to see your name at the top!</p>
-                        </div>
-                    </div>
-                )}
-            </main>
-
-            {/* Private Room Dialog */}
-            {showPrivateDialog && (
-                <PrivateRoomDialog onClose={() => setShowPrivateDialog(false)} />
-            )}
+            {showPrivateDialog && <PrivateRoomDialog  onClose={() => setShowPrivateDialog(false)}  onCreateRoom={handleCreateRoom} onJoinRoom={handleJoinRoom}/>}
         </div>
     );
 }

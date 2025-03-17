@@ -32,6 +32,7 @@ model Game {
   whitePlayer   User     @relation("WhiteGames", fields: [whitePlayerId], references: [id])
 }
 
+
 model Move {
   moveId   String   @id @default(uuid())
   gameId   String

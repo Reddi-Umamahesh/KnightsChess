@@ -25,17 +25,18 @@ export class Game {
   public game_result: GAME_RESULT | null = null;
   private move_count: number = 0;
   private Game_status: GAME_STATUS | null = null;
-  private varient: VARIENT = "RAPID";
+  private varient: VARIENT;
   private timer: NodeJS.Timeout | null = null;
-  private player1_timer = getTime(this.varient);
-  private player2_timer = getTime(this.varient);
+  private abandonTimer:NodeJS.Timeout | null = null
+  private player1_timer = 0;
+  private player2_timer = 0;
   private startTime: Date = new Date(Date.now());
 
   constructor(
     player1: User,
     player2: User,
+    varient: VARIENT,
     gameID?: string,
-    varient: VARIENT = "RAPID",
     startTime: Date = new Date(Date.now())
   ) {
     this.player1 = player1;
@@ -44,15 +45,12 @@ export class Game {
     this.board = new Chess();
     this.varient = varient;
     this.startTime = startTime;
+    this.player1_timer = getTime(this.varient);
+    this.player2_timer = getTime(this.varient);
   }
 
   async intiGame() {
-    console.log("game started!!");
-    console.log(
-      "from updatesecond player",
-      this.player1.name,
-      this.player2.name
-    );
+
     this.addTodb();
     const message = {
       type: INIT_GAME,
@@ -75,8 +73,13 @@ export class Game {
         player2_time: this.player2_timer,
       },
     };
-    console.log("game added", message);
     this.broadcast(JSON.stringify(message));
+    this.resetAbandonTime();
+    if (this.board.turn() === "w") {
+      this.sendPlayer1TimeCount();
+    } else {
+      this.sendPlayer2TimeCount();
+    }
   }
   updatePlayer1(User: User) {
     this.player1 = User;
@@ -88,7 +91,6 @@ export class Game {
     if (!this.player2) {
       return;
     }
-    console.log("inside add to db", this.player1.id, this.player2.id);
     try {
       const game = await db.game.create({
         data: {
@@ -98,16 +100,16 @@ export class Game {
           startTime: new Date(),
           whitePlayerId: this.player1.id,
           blackPlayerId: this.player2.id,
+          moves: { create: [] },
         },
       });
-      console.log("game", game);
     } catch (e) {
       console.error(e);
     }
   }
 
   async saveMovestoDB(move: Move) {
-    console.log("savinggg to db", move);
+
     try {
       await db.$transaction([
         db.move.create({
@@ -139,16 +141,12 @@ export class Game {
   }
   async makeMove(user: User, move: Move) {
 
-    console.log("inside makeMove", this.board.turn());
     if (this.board.turn() === BLACK && user.id !== this.player2?.id) {
       return;
     }
     if (this.board.turn() === WHITE && user.id !== this.player1.id) {
       return;
     }
- 
-    console.log("inside move", this.board.turn(), user.name);
-
     if (this.game_result) {
       return;
     }
@@ -163,20 +161,17 @@ export class Game {
       } else {
         moveResult = this.board.move({ from: move.from, to: move.to });
       }
-      console.log(moveResult);
     } catch (e) {
       console.log("error while moving", e);
       return;
     }
-
-    if (this.board.turn() === 'w') {
+    this.resetAbandonTime();
+    if (this.board.turn() === "w") {
       this.sendPlayer1TimeCount();
-      this.resetAbandonTime();
     } else {
-      this.sendPlayer1TimeCount();
-      this.resetAbandonTime();
+      this.sendPlayer2TimeCount();
     }
-    
+
     await this.saveMovestoDB(move);
 
     const moveMadeBy =
@@ -196,18 +191,23 @@ export class Game {
         },
       })
     );
-    console.log("move completed");
     this.move_count++;
-    // stalemate & three fold repeat
     if (this.board.isGameOver()) {
-      const response = this.board.isDraw()
-        ? DRAW
-        : this.board.turn() === WHITE
-          ? BLACK_WINS
-          : WHITE_WINS;
+      let response:GAME_RESULT = "DRAW"
+      let reason:GAME_STATUS = "CHECKMATE"
+      if (this.board.isCheckmate()) {
+        response = this.board.turn() === WHITE ? BLACK_WINS : WHITE_WINS;
+        reason = "CHECKMATE"
+      } else if (this.board.isStalemate()) {
+        response = DRAW;
+        reason = "STALEMATE"
+      }else {
+        response = DRAW
+        reason = "DRAW"
+      }  
+      console.log(response);
       this.game_result = response;
-      this.endGame("COMPLETED", response);
-      
+      this.endGame(reason, response);
     }
   }
 
@@ -226,11 +226,11 @@ export class Game {
         payload: {
           gameId: this.gameId,
           player1_time: this.player1_timer,
-          player2_time: this.player2_timer
+          player2_time: this.player2_timer,
         },
-      }
+      };
       this.broadcast(JSON.stringify(message));
-    } , 1000)
+    }, 1000);
   }
   sendPlayer2TimeCount() {
     if (this.timer) {
@@ -247,23 +247,25 @@ export class Game {
         payload: {
           gameId: this.gameId,
           player1_time: this.player1_timer,
-          player2_time: this.player2_timer
+          player2_time: this.player2_timer,
         },
-      }
+      };
       this.broadcast(JSON.stringify(message));
-    } , 1000)
+    }, 1000);
   }
 
   async resetAbandonTime() {
-    if (this.timer) {
-      clearTimeout(this.timer);
+    if (this.abandonTimer) {
+      clearTimeout(this.abandonTimer);
     }
-    this.timer = setTimeout(() => {
+
+    this.abandonTimer = setTimeout(() => {
+      console.log("ending game")
       this.endGame(
         "GAME_ABANDONDED",
         this.board.turn() === BLACK ? "WHITE_WINS" : "BLACK_WINS"
       );
-    }, 90 * 1000); 
+    }, 90 * 1000);
   }
 
   exitGame(user: User) {
@@ -278,7 +280,6 @@ export class Game {
       user.id === this.player1.id ? "BLACK_WINS" : "WHITE_WINS"
     );
   }
-  
 
   offerDraw(user: User) {
     this.broadcast(
@@ -293,16 +294,16 @@ export class Game {
   }
 
   acceptDraw() {
-      this.broadcast(
+    this.broadcast(
       JSON.stringify({
         type: DRAW_ACCEPT,
         payload: {
-          gameId : this.gameId,
+          gameId: this.gameId,
           messege: "Draw Accepted",
         },
       })
     );
-    this.endGame("COMPLETED", "DRAW");
+    this.endGame("DRAW", "DRAW");
   }
 
   rejectDraw() {
@@ -310,7 +311,7 @@ export class Game {
       JSON.stringify({
         type: DRAW_REJECT,
         payload: {
-          gameId : this.gameId,
+          gameId: this.gameId,
           messege: "Draw Rejected",
         },
       })
@@ -318,6 +319,9 @@ export class Game {
   }
 
   async endGame(gameStatus: GAME_STATUS, result: GAME_RESULT) {
+    if (this.timer) {
+      clearTimeout(this.timer);
+    }
     const updateGame = await db.game.update({
       data: {
         status: gameStatus,
@@ -369,7 +373,15 @@ export class Game {
   }
 
   broadcast(message: string) {
-    this.player1.socket.send(JSON.parse(message));
-    this.player2.socket.send(JSON.parse(message));
+    try {
+      if (this.player1.socket.readyState === WebSocket.OPEN) {
+        this.player1.socket.send(message);
+      }
+      if (this.player2.socket.readyState === WebSocket.OPEN) {
+        this.player2.socket.send(message);
+      }
+    } catch (error) {
+      console.error("Error broadcasting message:", error);
+    }
   }
 }

@@ -9,7 +9,8 @@ export type GAME_STATUS =
   | "TIME_OUT"
   | "CHECKMATE"
   | "COMPLETED"
-  | "RESIGNATION";
+  | "RESIGNATION"
+  | "DRAW";
 
   
 export type VARIENT = "RAPID" | "BLITZ" | "BULLET" | "THREE_CHECK";

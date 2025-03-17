@@ -12,27 +12,40 @@ import {
 } from "./messages";
 import { Game } from "./game";
 
-import { db } from "./db";
-import { User } from "./types";
+import { User, VARIENT } from "./types";
 
 export class GameManganer {
 
   private games: Map<string, Game>;
-  private pendingUser: User | null;
+  private rooms: Map<String, [User , VARIENT]>;
+  private pendingUserRapid: User | null;
+  private pendingUserBlitz: User | null;
+  private pendingUserBullet: User | null;
   private users: User[];
 
   constructor() {
     this.games = new Map();
     this.users = [];
-    this.pendingUser = null;
+    this.pendingUserRapid = null;
+    this.pendingUserBlitz = null;
+    this.pendingUserBullet = null;
+    this.rooms = new Map();
   }
 
   addUSer(user: User) {
     this.users.push(user);
+    this.updateUser(user);
     this.addHandler(user);
-    console.log("user added" )
   }
-
+  updateUser(user: User) {
+    this.games.forEach((game, id) => {
+      if (game.player1.id === user.id) {
+        game.updatePlayer1(user)
+      } else if (game.player2.id === user.id) {
+        game.updatePlayer2(user)
+      }
+    })
+  }
   removeuser(socket: WebSocket) {
     const user = this.users.find((u) => u.socket === socket);
     if (!user) {
@@ -54,43 +67,77 @@ export class GameManganer {
       const message = JSON.parse(data.toString());
       
       if (message.type === INIT_GAME) {
-        if (this.pendingUser) {
-          console.log("pendinguser present");
-          if (this.pendingUser.id === user.id) {
+        const { varient } = message;
+
+        let pendingUser: User | null = null;
+
+        if (varient === "RAPID") {
+          pendingUser = this.pendingUserRapid;
+        } else if (varient === "BULLET") {
+          pendingUser = this.pendingUserBullet;
+        } else if (varient === "BLITZ") {
+          pendingUser = this.pendingUserBlitz;
+        }
+        if (pendingUser) {
+          console.log("pending user present for", varient);
+          if (pendingUser.id === user.id) {
+            if (varient === "RAPID") {
+              this.pendingUserRapid = user;
+            } else if (varient === "BULLET") {
+              this.pendingUserBullet = user;
+            } else if (varient === "BLITZ") {
+              this.pendingUserBlitz = user;
+            }
             user.socket.send(
               JSON.stringify({
-                type: GAME_ALERT,
-                message:
-                "You can't play with yourself .  Please wait for another player.",
+                type: GAME_ADDED,
+                payload: {
+                  message: `waiting for player2 | invite your friend using gameId for ${varient} variant`,
+                },
               })
-            )
+            );
             return;
           }
-          const game = new Game(this.pendingUser, user);
-          console.log("adding 2nd player");
+          const game = new Game(pendingUser, user, varient);
+          console.log(
+            "adding 2nd player",
+            game.gameId,
+            game.player1.name,
+            game.player2.name
+          );
           this.games.set(game.gameId, game);
           await game.intiGame();
-          this.pendingUser = null;
+
+          if (varient === "RAPID") {
+            this.pendingUserRapid = null;
+          } else if (varient === "BULLET") {
+            this.pendingUserBullet = null;
+          } else if (varient === "BLITZ") {
+            this.pendingUserBlitz = null;
+          }
         } else {
-          this.pendingUser = user;
-          console.log(
-            "waiting for player2",
-            this.pendingUser.id,
-            user.id,
-          );
+          console.log(`waiting for player2 (${varient})`, user.id);
+          if (varient === "RAPID") {
+            this.pendingUserRapid = user;
+          } else if (varient === "BULLET") {
+            this.pendingUserBullet = user;
+          } else if (varient === "BLITZ") {
+            this.pendingUserBlitz = user;
+          }
+
           user.socket.send(
             JSON.stringify({
               type: GAME_ADDED,
               payload: {
-                message: "waiting for player2 | invite your friend using gameId",
+                message: `waiting for player2 | invite your friend using gameId for ${varient} variant`,
               },
             })
-          ); 
+          );
         }
       }
 
       if (message.type === MOVE_MADE) {
-        const game = this.games.get(message.gameId);
+        const game = this.games.get(message.payload.gameId);
         if (!game) {
           console.log("game not found");
           return;
@@ -135,97 +182,77 @@ export class GameManganer {
         }
         game.rejectDraw();
       }
-
-      if (message.type === "JOIN_ROOM") {
-        const gameId = message.payload.gameId;
-        
-        const game = this.games.get(message.gameId);
-        if (!game || gameId ) {
-          console.log("game not found");
-          return;
+      if (message.type === "CREATE_ROOM") {
+        const varient = message.varient || "RAPID";
+        function generateRandomNumber(): string {
+          return String(Math.floor(Math.random() * 999) + 1)
         }
-        if (user.id === game?.player1.id) {
-          game.updatePlayer1(user);
+        let number = generateRandomNumber();
+        while (this.rooms.has(number)) {
+          number = generateRandomNumber();
         }
-        if (user.id === game?.player2?.id) {
-          game.updatePlayer2(user);
-        }
-
-        const gameFromDB = await db.game.findUnique({
-          where: {
-            gameId: gameId,
-          },
-          include: {
-            moves: {
-              orderBy: {
-                moveNumber: "asc",
-              },
+        this.rooms.set(number , [user , varient])
+        setTimeout(() => {
+          if (this.rooms.has(number)) {
+            this.rooms.delete(number);
+            console.log(`Room ${number} deleted due to inactivity.`);
+          }
+        }, 2 * 600000); 
+        user.socket.send(
+          JSON.stringify({
+            type: GAME_ADDED,
+            payload: {
+              message: `Room created successfully! Your room ID is: ${number}`,
             },
-            whitePlayer: true,
-            blackPlayer: true,
-          },
-        });
+          })
+        );
 
-
-        if (!gameFromDB) {
+      }
+      if (message.type === "JOIN_ROOM") {
+        const roomId = message.roomId;
+        if (!this.rooms.has(roomId)) {
           user.socket.send(
             JSON.stringify({
               type: GAME_ALERT,
-              message: "Game not found",
+              message: "room not found , please create one!",
             })
           );
           return;
         }
-        if (gameFromDB.status === "IN_PROGRESS") {
+        const roomData = this.rooms.get(roomId)
+        if (!roomData) {
           user.socket.send(
             JSON.stringify({
-              type: "IN_PROGRESS",
-              payload: {
-                gameId: gameFromDB.gameId,
-                status: gameFromDB.status,
-                currentFen: gameFromDB.currentFen,
-                moves: gameFromDB.moves,
-                player1: {
-                  id: gameFromDB.whitePlayer.id,
-                  name: gameFromDB.whitePlayer.name,
-                },
-                player2: {
-                  id: gameFromDB.blackPlayer.id,
-                  name: gameFromDB.blackPlayer.name,
-                },
-                player1_time_consumed:
-                  gameFromDB.whitePlayerTimeConsumed,
-                player2_time_consumed:
-                  gameFromDB.blackPlayerTimeConsumed,
-              },
+              type: GAME_ALERT,
+              message: "room not found",
             })
           );
+          return;
         }
-        if (gameFromDB.status !== "IN_PROGRESS") {
+        const player1: User = roomData[0];
+        const varient:VARIENT = roomData[1]
+        if (player1.id === user.id) {
           user.socket.send(
             JSON.stringify({
-              type: GAME_ENDED,
+              type: GAME_ADDED,
               payload: {
-                gameId: gameFromDB.gameId,
-                result: gameFromDB.gameResult,
-                status: gameFromDB.status,
-                currentFen: gameFromDB.currentFen,
-                moves: gameFromDB.moves,
-                player1: {
-                  id: gameFromDB.whitePlayer.id,
-                  name: gameFromDB.whitePlayer.name,
-                },
-                player2: {
-                  id: gameFromDB.blackPlayer.id,
-                  name: gameFromDB.blackPlayer.name,
-                },
-                player1_time_consumed: gameFromDB.whitePlayerTimeConsumed,
-                player2_time_consumed: gameFromDB.blackPlayerTimeConsumed,
+                message: `waiting for player2 | invite your friend using gameId for ${roomId} roomId`,
               },
             })
           );
           return;
         }
+        console.log("adding");
+        const game = new Game(player1, user , varient);
+        console.log(
+          "adding 2nd player",
+          game.gameId,
+          game.player1.name,
+          game.player2.name
+        );
+        this.games.set(game.gameId, game);
+        await game.intiGame();
+        this.rooms.delete(roomId)
       }
     });
     

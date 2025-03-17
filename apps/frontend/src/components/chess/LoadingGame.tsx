@@ -1,10 +1,12 @@
-import  { useEffect, useState } from "react";
+import  React, { useEffect, useState } from "react";
 
 const pieces = ["p", "k", "r", "q", "k", "b"].map(
   (piece) => `/pieces/${piece}.png`
 );
-
-function LoadingGame() {
+interface LoadingGameProps {
+  message: string;
+}
+const LoadingGame: React.FC<LoadingGameProps> = ({message}) => {
   const [currentPiece, setCurrentPiece] = useState(0);
 
   useEffect(() => {
@@ -16,7 +18,7 @@ function LoadingGame() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[] flex items-center justify-center bg-opacity-50">
+    <div className="min-h-screen bg-[] flex items-center justify-center bg-opacity-80">
       <div className="relative">
         {/* Rotating border effect */}
         <div className="absolute inset-0 rounded-lg">
@@ -37,7 +39,7 @@ function LoadingGame() {
         {/* Loading text */}
         <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
           <p className="text-amber-500 font-semibold">
-            Setting up the board | waiting for opponent
+            {message}
           </p>
         </div>
       </div>
