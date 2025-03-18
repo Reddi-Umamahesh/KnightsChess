@@ -1,0 +1,10 @@
+apps/backend/node_modules
+apps/backend/.turbo
+apps/backend/.env
+node_modules
+.turbo
+.env
+.git
+apps/frontend
+*.log
+*.tsbuildinfo

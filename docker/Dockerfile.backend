@@ -1,0 +1,21 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package.json package-lock.json turbo.json .npmrc ./
+
+
+COPY apps/backend/package.json apps/backend/
+COPY packages/db/package.json packages/db/
+
+RUN npm install
+
+COPY apps/backend apps/backend/
+COPY packages/db packages/db/
+
+
+RUN npm run generate:db
+
+EXPOSE 3000
+
+CMD ["npm", "run" , "start:backend"]

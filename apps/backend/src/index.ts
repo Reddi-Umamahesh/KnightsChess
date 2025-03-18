@@ -10,7 +10,6 @@ import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
 import * as dotenv from "dotenv";
 dotenv.config();
-
 const app = express();
 const port = 3000;
 

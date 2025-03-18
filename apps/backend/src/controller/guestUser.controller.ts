@@ -32,9 +32,8 @@ export const createGuestUser = async (req: Request, res: Response) => {
     console.log("login sucecessful");
     res.cookie("token", token, {
       httpOnly: true,
-      // secure : process.env.NODE_ENV === 'production',
       sameSite: "strict",
-      maxAge: 60 * 60 * 24, // 1 day , change this
+      maxAge: 60 * 60 * 24, 
     });
     res.status(200).json({
       message: "Login successful",
