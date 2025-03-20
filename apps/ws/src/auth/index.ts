@@ -14,9 +14,9 @@ export interface jwtUserClaims {
 export const extractUser = (token: string, ws: WebSocket) => {
   try {
     const decoded = jwt.verify(token, code || "secret_key");
-    console.log("decoded",decoded)
+   
     const userClaims = decoded as jwtUserClaims;
-    console.log(userClaims)
+
     const user: User = {
       id: userClaims.id,
       name: userClaims.name,
@@ -25,6 +25,6 @@ export const extractUser = (token: string, ws: WebSocket) => {
     };
     return user;
   } catch (e) {
-    console.log("error in extracting user" , e);
+    // console.log("error in extracting user" , e);
   }
 };

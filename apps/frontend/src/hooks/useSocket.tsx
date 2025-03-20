@@ -10,9 +10,9 @@ const useWebSocket = () => {
     const token = localStorage.getItem(USER_TOKEN);
     if (token) {
       setToken(token);
-      console.log("Token found:", token);
+      // console.log("Token found:", token);
     } else {
-      console.log("No token found");
+      // console.log("No token found");
     }
   }, []);
 
@@ -20,21 +20,21 @@ const useWebSocket = () => {
     if (!token) return;
 
     const url = wsurl + token;
-    console.log("Connecting to WebSocket with URL:", url);
+    // console.log("Connecting to WebSocket with URL:", url);
 
     const ws = new WebSocket(url);
 
     ws.onopen = () => {
-      console.log("Connected to WebSocket server");
+      // console.log("Connected to WebSocket server");
       setSocket(ws);
     };
 
-    ws.onclose = (event) => {
-      console.log("Disconnected from WebSocket server", event.code);
+    ws.onclose = () => {
+      // console.log("Disconnected from WebSocket server", event.code);
       setSocket(null);
 
       setTimeout(() => {
-        console.log("Attempting to reconnect...");
+        // console.log("Attempting to reconnect...");
         createWebSocket();
       }, 1000); 
     };

@@ -97,7 +97,6 @@ export interface Game {
 
 //helper function
 export const getCookie = (name: string) => {
-  console.log("from helper :", name);
   const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
   return match ? match[2] : null; // Return the cookie value if found, else null
 };

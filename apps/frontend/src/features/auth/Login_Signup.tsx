@@ -32,11 +32,11 @@ function Login() {
         formData,
         { withCredentials: true }
       );
-      console.log("response", res);
+      // console.log("response", res);
       if (res.data.success) {
-        console.log("success");
+        // console.log("success");
         const decoded: BaseUserInterface = jwtDecode(res.data.token);
-        console.log(decoded);
+        // console.log(decoded);
         setAuthState({
           isAuthenticated: true,
           user: {
@@ -47,7 +47,7 @@ function Login() {
         });
         localStorage.setItem(USER_TOKEN, res.data.token);
         toast.success(res.data.message);
-        console.log("navigating home");
+        // console.log("navigating home");
         navigate("/home");
       }
     } catch (error) {

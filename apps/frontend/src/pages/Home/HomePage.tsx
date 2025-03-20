@@ -49,7 +49,6 @@ function HomePage() {
                     };
                     localStorage.setItem("current_game", JSON.stringify(newgame));
                     localStorage.setItem("reload", "1");
-                    console.log(newgame)
                     setGame({ gameId: newgame.gameId, game: newgame });
                     setWaitingForGame(false);
                     navigate(`/game/${gameId}`);

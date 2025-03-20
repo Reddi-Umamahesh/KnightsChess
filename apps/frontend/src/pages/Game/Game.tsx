@@ -41,7 +41,6 @@ export const Game = () => {
     if (!localStorage.getItem("reload")) {
       return 
     }
-    console.log(board ,isGameOver)
     localStorage.removeItem("reload");
     location.reload();
     
@@ -49,20 +48,16 @@ export const Game = () => {
   reload();
   useEffect(() => {
     if (!socket) return;
-    console.log("Re-rendering Game component due to WebSocket reconnection" , chess.board());
     const handleMessage = (event: MessageEvent) => {
       const message = JSON.parse(event.data);
       const payload = message.payload;
-      // console.log("message", message);
       setBoard(chess.board());
       const gameId = message.payload?.gameId;
       switch (message.type) {
         case MOVE:
           try {
-            console.log("MOVE", message, payload)
             if (!gameRef.current) return;
             const move = message.payload.move as Move;
-            console.log("from switch ,", move);
             const currGame = gameRef.current;
             if (currGame && currGame.gameId === message.payload.gameId) {
               const updatedGame = {
@@ -72,18 +67,16 @@ export const Game = () => {
                 fen: payload.fen
               }
               handleGameState(gameId, updatedGame);
-              console.log("move", chess.board())
               chess.load(gameRef.current.fen || inital_Fen)
               setBoard(chess.board());
-              console.log("moved", updatedGame);
             }
           } catch (e) {
-            console.log(e)
+            // console.log(e)
           }
           
           break;
         case DRAW_OFFER:
-          console.log("draw sent by");
+        
           const senderId = message.payload.senderId
           if (user?.id !== senderId) {
             setDrawOffer(true)
@@ -94,7 +87,7 @@ export const Game = () => {
           break;
         case GAME_OVER:
           if (!gameRef.current) return;
-          console.log("game ended" , message);
+         
           const currGame = gameRef.current;
           if (currGame) {
             const updatedGame = {
@@ -123,7 +116,7 @@ export const Game = () => {
     };
     socket.addEventListener("message", handleMessage);
     return () => {
-      console.log("removinggg")
+     
       socket.removeEventListener("message", handleMessage);
     };
   }, [socket ]);
@@ -162,7 +155,7 @@ export const Game = () => {
         })
       );
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     } finally {
       setDrawOffer(false);
     }
@@ -172,7 +165,7 @@ export const Game = () => {
     if (moves.length === 0) {
       return false;
     }
-    console.log("moves" , moves)
+   
     const newSquares: { [square: string]: CSSProperties } = {};
    
     moves.forEach(move => {
@@ -223,7 +216,7 @@ export const Game = () => {
     const movePayload = isPromoting(chess, from, square)
       ? { from, to: square, promotion: "q" }
       : { from, to: square };
-    console.log("movePayload", movePayload);
+
     try {
       socket?.send(
         JSON.stringify({
@@ -234,8 +227,7 @@ export const Game = () => {
           },
         })
       );
-      console.log("sentMove")
-      console.log(chess.board(), gameRef.current?.fen, chess.fen())
+    
     } catch (error) {
       console.error("Error sending move", error);
     }
@@ -246,7 +238,7 @@ export const Game = () => {
 
   const onSquareRightClick = (square: Square) => {
     const colour = "rgba(0, 0, 255, 0.4)";
-    console.log("clicked")
+ 
     setRightClickedSquares((prevState) => {
       const newState = { ...prevState };
       if (newState[square]?.backgroundColor === colour) {
@@ -258,7 +250,7 @@ export const Game = () => {
     });
   };
   if (!socket) {
-    console.log("returning ")
+    // console.log("returning ")
     return <div className="text-white">Connecting to game server...</div>;
   }
   return (

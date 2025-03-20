@@ -49,7 +49,7 @@ export class GameManganer {
   removeuser(socket: WebSocket) {
     const user = this.users.find((u) => u.socket === socket);
     if (!user) {
-      console.log("No user found");
+      // console.log("No user found");
       return;
     }
     this.users = this.users.filter((u) => u.socket !== user.socket);
@@ -62,7 +62,6 @@ export class GameManganer {
   }
 
   private addHandler(user: User) {
-    console.log("adding handler");
     user.socket.on("message", async (data) => {
       const message = JSON.parse(data.toString());
       
@@ -79,7 +78,7 @@ export class GameManganer {
           pendingUser = this.pendingUserBlitz;
         }
         if (pendingUser) {
-          console.log("pending user present for", varient);
+        
           if (pendingUser.id === user.id) {
             if (varient === "RAPID") {
               this.pendingUserRapid = user;
@@ -99,12 +98,7 @@ export class GameManganer {
             return;
           }
           const game = new Game(pendingUser, user, varient);
-          console.log(
-            "adding 2nd player",
-            game.gameId,
-            game.player1.name,
-            game.player2.name
-          );
+          
           this.games.set(game.gameId, game);
           await game.intiGame();
 
@@ -116,7 +110,7 @@ export class GameManganer {
             this.pendingUserBlitz = null;
           }
         } else {
-          console.log(`waiting for player2 (${varient})`, user.id);
+          // console.log(`waiting for player2 (${varient})`, user.id);
           if (varient === "RAPID") {
             this.pendingUserRapid = user;
           } else if (varient === "BULLET") {
@@ -139,7 +133,6 @@ export class GameManganer {
       if (message.type === MOVE_MADE) {
         const game = this.games.get(message.payload.gameId);
         if (!game) {
-          console.log("game not found");
           return;
         }
         game.makeMove(user, message.payload.move);
@@ -151,7 +144,6 @@ export class GameManganer {
       if (message.type === EXIT_GAME) {
         const game = this.games.get(message.gameId);
         if (!game) {
-          console.log("game not found");
           return;
         }
         game.exitGame(user);
@@ -160,7 +152,7 @@ export class GameManganer {
       if (message.type === "RESIGNATION") {
         const game = this.games.get(message.gameId);
         if (!game) {
-          console.log("game not found");
+ 
           return;
         }
         game.resignGame(user);
@@ -169,7 +161,7 @@ export class GameManganer {
       if (message.type == DRAW_OFFER) {
         const game = this.games.get(message.gameId);
         if (!game) {
-          console.log("game not found");
+        
           return;
         }
         game.offerDraw(user);
@@ -178,7 +170,7 @@ export class GameManganer {
       if (message.type === DRAW_ACCEPT) {
         const game = this.games.get(message.gameId);
         if (!game) {
-          console.log("game not found");
+        
           return;
         }
         game.acceptDraw();
@@ -186,7 +178,7 @@ export class GameManganer {
       if (message.type === DRAW_REJECT) {
         const game = this.games.get(message.gameId);
         if (!game) {
-          console.log("game not found");
+         
           return;
         }
         game.rejectDraw();
@@ -204,7 +196,7 @@ export class GameManganer {
         setTimeout(() => {
           if (this.rooms.has(number)) {
             this.rooms.delete(number);
-            console.log(`Room ${number} deleted due to inactivity.`);
+            
           }
         }, 2 * 600000); 
         user.socket.send(
@@ -251,14 +243,8 @@ export class GameManganer {
           );
           return;
         }
-        console.log("adding");
+
         const game = new Game(player1, user , varient);
-        console.log(
-          "adding 2nd player",
-          game.gameId,
-          game.player1.name,
-          game.player2.name
-        );
         this.games.set(game.gameId, game);
         await game.intiGame();
         this.rooms.delete(roomId)

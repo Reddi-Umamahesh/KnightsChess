@@ -11,7 +11,7 @@ const wss = new WebSocketServer({ port: 8080 });
 const gameManager = new GameManganer();
 wss.on("connection", function connection(ws, req) {
   if (!req.url) {
-    console.log("url not found")
+    // console.log("url not found")
     return 
   }
   console.log("connected");
@@ -21,9 +21,8 @@ wss.on("connection", function connection(ws, req) {
   }
   const token: string = ur
   const user = extractUser(token, ws);
-  console.log(user?.name ,ws.readyState);
   if (!user) {
-    console.log("user not found");
+    // console.log("user not found");
     ws.close();
     return;
   }

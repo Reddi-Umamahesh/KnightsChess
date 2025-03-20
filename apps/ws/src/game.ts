@@ -136,7 +136,7 @@ export class Game {
         }),
       ]);
     } catch (e) {
-      console.log("error while saving move to db", e);
+      // console.log("error while saving move to db", e);
     }
   }
   async makeMove(user: User, move: Move) {
@@ -162,7 +162,7 @@ export class Game {
         moveResult = this.board.move({ from: move.from, to: move.to });
       }
     } catch (e) {
-      console.log("error while moving", e);
+      // console.log("error while moving", e);
       return;
     }
     this.resetAbandonTime();
@@ -206,7 +206,7 @@ export class Game {
         response = DRAW
         reason = "DRAW"
       }  
-      console.log(response);
+      // console.log(response);
       this.game_result = response;
       this.endGame(reason, response);
     }
@@ -261,7 +261,7 @@ export class Game {
     }
 
     this.abandonTimer = setTimeout(() => {
-      console.log("ending game")
+      // console.log("ending game")
       this.endGame(
         "PLAYER_EXIT",
         this.board.turn() === BLACK ? "WHITE_WINS" : "BLACK_WINS"
