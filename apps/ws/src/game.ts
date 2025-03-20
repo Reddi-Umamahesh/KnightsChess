@@ -172,7 +172,7 @@ export class Game {
       this.sendPlayer2TimeCount();
     }
 
-    await this.saveMovestoDB(move);
+    
 
     const moveMadeBy =
       this.board.turn() === BLACK ? this.player1 : this.player2;
@@ -191,6 +191,7 @@ export class Game {
         },
       })
     );
+    await this.saveMovestoDB(move);
     this.move_count++;
     if (this.board.isGameOver()) {
       let response:GAME_RESULT = "DRAW"
@@ -262,7 +263,7 @@ export class Game {
     this.abandonTimer = setTimeout(() => {
       console.log("ending game")
       this.endGame(
-        "GAME_ABANDONDED",
+        "PLAYER_EXIT",
         this.board.turn() === BLACK ? "WHITE_WINS" : "BLACK_WINS"
       );
     }, 90 * 1000);
@@ -322,6 +323,31 @@ export class Game {
     if (this.timer) {
       clearTimeout(this.timer);
     }
+    
+
+    this.broadcast(
+      JSON.stringify({
+        type: GAME_OVER,
+        payload: {
+          gameId: this.gameId,
+          status: gameStatus,
+          result: result,
+          whitePlayer: {
+            id: this.player1.id,
+            name: this.player1.name,
+          },
+          blackPlayer: {
+            id: this.player2.id,
+            name: this.player2.name,
+          },
+          startTime: this.startTime,
+          endTime: new Date(Date.now()),
+          current_fen: this.board.fen(),
+          player1TimeConsumed: this.player1_timer,
+          player2TimeConsumed: this.player2_timer,
+        },
+      })
+    );
     const updateGame = await db.game.update({
       data: {
         status: gameStatus,
@@ -342,31 +368,6 @@ export class Game {
         whitePlayer: true,
       },
     });
-
-    this.broadcast(
-      JSON.stringify({
-        type: GAME_OVER,
-        payload: {
-          gameId: this.gameId,
-          status: gameStatus,
-          result: result,
-          moves: updateGame.moves,
-          whitePlayer: {
-            id: updateGame.whitePlayer.id,
-            name: updateGame.whitePlayer.name,
-          },
-          blackPlayer: {
-            id: updateGame.blackPlayer.id,
-            name: updateGame.blackPlayer.name,
-          },
-          startTime: this.startTime,
-          endTime: new Date(Date.now()),
-          current_fen: this.board.fen(),
-          player1TimeConsumed: this.player1_timer,
-          player2TimeConsumed: this.player2_timer,
-        },
-      })
-    );
     if (this.timer) {
       clearInterval(this.timer);
     }

@@ -22,7 +22,7 @@ function Login() {
   });
   const navigate = useNavigate();
   const setAuthState = useSetRecoilState(authState);
-
+  const [loading , setLoading] = useState(false)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {

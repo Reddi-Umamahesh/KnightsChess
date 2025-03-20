@@ -3,10 +3,12 @@ import { PlayCircle,  User } from 'lucide-react';
 import { FaGoogle } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import { useguestAuth } from '@/features/auth/guestAuth';
+import { useState } from 'react';
 
 function LandingPage() {
-    const navigate = useNavigate();
-    const guestAuth = useguestAuth();
+  const [loading , setLoading] = useState(false)
+  const navigate = useNavigate();
+  const guestAuth = useguestAuth();
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-gray-100">
       {/* Hero Section */}
@@ -34,16 +36,22 @@ function LandingPage() {
               <span>Login to Play</span>
             </button>
             <div className="flex justify-center space-x-4">
-              <button className="bg-gray-800 hover:bg-gray-700 py-2 px-4 rounded-lg flex items-center space-x-2">
+              {/* <button className="bg-gray-800 hover:bg-gray-700 py-2 px-4 rounded-lg flex items-center space-x-2">
                 <FaGoogle />
                 <span>Google</span>
-              </button>
+              </button> */}
               <button
-                onClick={guestAuth}
+                onClick={() => {guestAuth({setLoading})}}
                 className="bg-gray-800 hover:bg-gray-700 py-2 px-4 rounded-lg flex items-center space-x-2"
+                disabled = {loading}
               >
-                <User className="w-5 h-5" />
-                <span>Continue as Guest</span>
+                {loading ? (
+                <div className='spinner'></div>
+                ): (
+                    <><User className="w-5 h-5" />
+                      <span>Continue as Guest</span></>
+                )}
+                
               </button>
             </div>
             <p className="text-gray-400">
