@@ -157,7 +157,15 @@ export class GameManganer {
         game.exitGame(user);
         this.removeGame(game.gameId);
       }
-
+      if (message.type === "RESIGNATION") {
+        const game = this.games.get(message.gameId);
+        if (!game) {
+          console.log("game not found");
+          return;
+        }
+        game.resignGame(user);
+        this.removeGame(game.gameId);
+      }
       if (message.type == DRAW_OFFER) {
         const game = this.games.get(message.gameId);
         if (!game) {
@@ -166,6 +174,7 @@ export class GameManganer {
         }
         game.offerDraw(user);
       }
+      
       if (message.type === DRAW_ACCEPT) {
         const game = this.games.get(message.gameId);
         if (!game) {

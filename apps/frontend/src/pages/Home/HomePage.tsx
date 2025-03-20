@@ -92,11 +92,11 @@ function HomePage() {
     };
 
     if (waitingForGame) {
-        return <LoadingGame message={waitingMessage} />;
+        return <LoadingGame link="" message={waitingMessage} />;
     }
 
     if (!socket) {
-        return <LoadingGame message="login failed please login again!" />;
+        return <LoadingGame link="/home" message="login failed please login again!" />;
     }
 
     return (

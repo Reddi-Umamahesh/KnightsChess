@@ -8,6 +8,7 @@ import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { isPromoting } from "@/utils/helper";
 import { DRAW_ACCEPT, DRAW_OFFER, DRAW_REJECT, GAME_OVER, inital_Fen, MOVE, TIME_UPDATE } from "@/utils/constants";
+import { authState } from "@/recoil/userAtoms";
 
 
 
@@ -18,11 +19,14 @@ export const Game = () => {
   const [isGameOver, setIsGameOver] = useState(false);
   const gameAuth = useRecoilValue(GameState);
   const game = gameAuth.game;
+  const auth = useRecoilValue(authState);
   const gameRef = useRef<GameType | null>(game);
+  const user = auth.user;
   const setGame = useSetRecoilState(GameState);
   const [from, setFrom] = useState<Square | null>(null);
   const [optionSquares, setOptionSquares] = useState<{ [square: string]: CSSProperties }>({});
   const [rightClickedSquares, setRightClickedSquares] = useState<{ [square: string]: CSSProperties }>({});
+  const [drawOffer , setDrawOffer] = useState(false)
   chess.load(gameRef.current?.fen || inital_Fen)
 
   const handleGameState = (gameId: string, game: GameType) => {
@@ -79,13 +83,14 @@ export const Game = () => {
           
           break;
         case DRAW_OFFER:
-          console.log("draw sent by", payload.senderId);
-          break;
-        case DRAW_ACCEPT:
-          console.log("draw accepted game ended by agrement");
-          break;
-        case DRAW_REJECT:
-          console.log("draw rejected game ended by rejection");
+          console.log("draw sent by");
+          const senderId = message.payload.senderId
+          if (user?.id !== senderId) {
+            setDrawOffer(true)
+            setTimeout(() => {
+              setDrawOffer(false)
+            },10* 1000)
+          }
           break;
         case GAME_OVER:
           if (!gameRef.current) return;
@@ -96,7 +101,6 @@ export const Game = () => {
               ...currGame,
               status: payload.status,
               result: payload.result,
-              moves: payload.moves,
               fen : payload.current_fen
             }
             handleGameState(gameId, updatedGame);
@@ -124,7 +128,45 @@ export const Game = () => {
     };
   }, [socket ]);
 
-
+  const resignGame = () => {
+    try {
+      socket?.send(
+        JSON.stringify({
+          type: "RESIGNATION",
+          gameId: gameAuth.gameId,
+        })
+      );
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  const offerDraw = () => {
+    try {
+      socket?.send(
+        JSON.stringify({
+          type: "draw_offer",
+          gameId: gameAuth.gameId,
+        })
+      );
+      
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  const handleDrawOffer = (type: string) => {
+    try {
+      socket?.send(
+        JSON.stringify({
+          type: type,
+          gameId: game?.gameId,
+        })
+      );
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setDrawOffer(false);
+    }
+  };
   const getMoveOptions = (square: Square) => {
     const moves = chess.moves({ square, verbose: true });
     if (moves.length === 0) {
@@ -238,7 +280,26 @@ export const Game = () => {
 
           {/* Utility Box Section - Fixed width on large screens */}
           <div className="lg:w-[600px] h-full flex flex-col">
-            <UtilityBox />
+            {drawOffer && (
+              <div className="absolute top-0 right-0 w-[250px] bg-gray-800 p-4 rounded-lg shadow-lg text-center">
+                <p className="text-white mb-4">Your opponent has offered a draw.</p>
+                <div className="flex justify-center gap-4">
+                  <button
+                    onClick={() => handleDrawOffer("draw_accept")}
+                    className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg"
+                  >
+                    Accept
+                  </button>
+                  <button
+                    onClick={() => handleDrawOffer("draw_reject")}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg"
+                  >
+                    Decline
+                  </button>
+                </div>
+              </div>
+            )}
+            <UtilityBox offerDraw={offerDraw} resignGame={resignGame} moves={gameRef.current?.moves ?? []} />
           </div>
         </div>
       </div>

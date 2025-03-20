@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import Login from "./features/auth/Login_Signup";
 import HomePage from "./pages/Home/HomePage";
 import { Game } from "./pages/Game/Game";
+import NotFoundPage from "./pages/Home/NotFoundPage";
 
 function App() {
   const [token, setToken] = useRecoilState(tokenState);
@@ -42,6 +43,10 @@ function App() {
         path: "/game/:id",
         element: <Game />,
       },
+      {
+        path: "*",
+        element: <NotFoundPage />
+      }
     ],
     {
       future: {
