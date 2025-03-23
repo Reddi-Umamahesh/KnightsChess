@@ -95,7 +95,7 @@ function HomePage() {
     }
 
     if (!socket) {
-        return <LoadingGame link="/home" message="login failed please login again!" />;
+        return <LoadingGame link="/home" message="loading please wait.." />;
     }
 
     return (
