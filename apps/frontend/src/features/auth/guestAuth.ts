@@ -24,7 +24,7 @@ export const useguestAuth = () => {
      console.log("from here!! guest button");
     try {
       const url = guest_api_endpoint + "/createGuest";
-      const response = await axios.post(url, {}, { withCredentials: true });
+      const response = await axios.post(url);
 
       if (response.data.success && response.data.token) {
         const decodedUser: BaseUserInterface = jwtDecode(response.data.token);

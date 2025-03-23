@@ -1,6 +1,6 @@
 
 import { PlayCircle,  User } from 'lucide-react';
-import { FaGoogle } from "react-icons/fa";
+// import { FaGoogle } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import { useguestAuth } from '@/features/auth/guestAuth';
 import { useState } from 'react';

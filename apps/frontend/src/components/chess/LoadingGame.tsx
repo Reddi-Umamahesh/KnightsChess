@@ -12,58 +12,49 @@ interface LoadingGameProps {
 }
 
 const LoadingGame: React.FC<LoadingGameProps> = ({ message, link }) => {
-  const [currentPiece, setCurrentPiece] = useState(0);
   const navigate = useNavigate();
-  const [countdown, setCountdown] = useState(10);
+  const [currentPiece, setCurrentPiece] = useState(0);
 
   useEffect(() => {
-    const pieceInterval = setInterval(() => {
+    const interval = setInterval(() => {
       setCurrentPiece((prev) => (prev + 1) % pieces.length);
     }, 1000);
-
-    return () => clearInterval(pieceInterval);
+    return () => clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          navigate("/");
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [navigate]);
-
+  <div className="w-24 h-24 bg-gray-800/80 rounded-lg flex items-center justify-center p-4 backdrop-blur-sm mb-3">
+  
+  </div>
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+    <div className="min-h-screen flex items-center justify-center bg-black text-white">
       <div className="relative flex flex-col items-center">
-        {/* Rotating border effect */}
-        <div className="absolute inset-0 rounded-lg">
-          <div className="w-full h-full animate-spin">
-            <div className="w-full h-full rounded-lg border-4 border-transparent border-t-amber-500 border-r-amber-500"></div>
+        {/* Loading animation container */}
+        <div className="relative w-32 h-32 mb-8">
+          {/* Outer rotating ring */}
+          <div className="absolute inset-0 rounded-full border-4 border-purple-600/20" />
+          <div
+            className="absolute inset-0 rounded-full border-4 border-transparent border-t-purple-600"
+            style={{
+              animation: "spin 1.5s linear infinite"
+            }}
+          />
+
+          {/* Chess piece */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-5xl text-purple-400">
+              <img
+                src={pieces[currentPiece]}
+                alt="Loading Chess Piece"
+                className="w-16 h-16 transition-opacity duration-300"
+              />
+            </div>
           </div>
         </div>
-
-        {/* Chess piece container */}
-        <div className="w-24 h-24 bg-gray-800/80 rounded-lg flex items-center justify-center p-4 backdrop-blur-sm mb-3">
-          <img
-            src={pieces[currentPiece]}
-            alt="Loading Chess Piece"
-            className="w-16 h-16 transition-opacity duration-300"
-          />
-        </div>
-
         {/* Message */}
-        <p className="text-amber-500 font-semibold text-lg">{message}</p>
+        <p className="text-purple-400 font-semibold text-lg mb-2">{message}</p>
 
-        {/* Button for navigation */}
+        {/* Navigation button */}
         {link.length > 2 && (
-          <div className="mt-6 flex flex-col items-center">
+          <div className="mt-8">
             <button
               onClick={() => navigate("/")}
               className="flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all group"
@@ -72,9 +63,6 @@ const LoadingGame: React.FC<LoadingGameProps> = ({ message, link }) => {
               <span>Back to Home</span>
               <ArrowRight className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
-            <p className="text-gray-400 mt-2 text-sm">
-              Auto-redirecting in {countdown} seconds...
-            </p>
           </div>
         )}
       </div>

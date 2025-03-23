@@ -36,11 +36,12 @@ export interface GuestUser {
   iat: number;
   exp: number;
 }
-export const guest_api_endpoint = "http://localhost:3000/api/v1/guest";
-export const user_api_endpoint = "http://localhost:3000/api/v1/user";
-export const api_endpoint = "http://localhost:3000/api/v1";
-export const google_auth_endpoint = "http://localhost:3000/auth/google";
-export const ws_url = "ws://localhost:8080";
+export const guest_api_endpoint =
+  "https://knightschess-backend-api.umamahesh.site/api/v1/guest";
+export const user_api_endpoint = "https://knightschess-backend-api.umamahesh.site/api/v1/user";
+export const api_endpoint = "https://knightschess-backend-api.umamahesh.site/api/v1";
+export const google_auth_endpoint = "https://knightschess-backend-api.umamahesh.site/auth/google";
+export const ws_url = "wss://knightschess-websocket-api.umamahesh.site";
 
 export type GAME_RESULT = "WHITE_WINS" | "BLACK_WINS" | "DRAW" | null;
 export type GAME_MODE = "RAPID" | "BLITZ" | "BULLET"

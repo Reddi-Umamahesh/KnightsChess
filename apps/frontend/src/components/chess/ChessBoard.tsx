@@ -77,7 +77,6 @@ const ChessBoard: React.FC<Props> = (
           onSquareClick={OnSquareClick}
           onSquareRightClick={OnSquareRightClick}
           arePiecesDraggable={false}
-          // Merge our custom square styles (available moves and right-click markers)
           customSquareStyles={{ ...optionSquares, ...rightClickedSquares }}
           customLightSquareStyle={{ backgroundColor: "rgba(107,33,168,0.4)" }}
           customDarkSquareStyle={{ backgroundColor: "rgba(31,41,55,0.6)" }}

@@ -87,7 +87,7 @@ export const Game = () => {
           break;
         case GAME_OVER:
           if (!gameRef.current) return;
-         
+          console.log("game ended")
           const currGame = gameRef.current;
           if (currGame) {
             const updatedGame = {
@@ -181,7 +181,7 @@ export const Game = () => {
         background: pieceAtDestination && pieceAtDestination.color === pieceAtSource?.color
           ? lightSquareMoveHighlight
           : darkSquareMoveHighlight,
-        borderRadius: "50%"
+        borderRadius: "80%"
       };
     });
 
@@ -257,7 +257,6 @@ export const Game = () => {
     <div className="min-h-screen flex flex-col lg:flex-row">
       <div className="w-full flex flex-col lg:flex-row flex-1 bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 min-h-screen text-gray-100">
         <div className="w-full h-full flex flex-col lg:flex-row gap-8 p-4">
-          {/* Chess Board Section - Grow to available space */}
           <div className="flex-1 h-full min-h-[500px] lg:min-h-0">
 
             <ChessBoard

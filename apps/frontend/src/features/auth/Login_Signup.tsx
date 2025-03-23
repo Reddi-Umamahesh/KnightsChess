@@ -12,6 +12,7 @@ import {
 } from "../../utils/constants";
 import { authState } from "../../recoil/userAtoms";
 import { FaGoogle } from "react-icons/fa";
+import { useguestAuth } from "./guestAuth";
 
 function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -22,19 +23,19 @@ function Login() {
   });
   const navigate = useNavigate();
   const setAuthState = useSetRecoilState(authState);
-  const [loading , setLoading] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const guestAuth = useguestAuth();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setLoading(true)
       const endpoint = isLogin ? "/login" : "/register";
       const res = await axios.post(
         `${user_api_endpoint}${endpoint}`,
-        formData,
-        { withCredentials: true }
+        formData
       );
-      // console.log("response", res);
       if (res.data.success) {
-        // console.log("success");
+        
         const decoded: BaseUserInterface = jwtDecode(res.data.token);
         // console.log(decoded);
         setAuthState({
@@ -47,7 +48,6 @@ function Login() {
         });
         localStorage.setItem(USER_TOKEN, res.data.token);
         toast.success(res.data.message);
-        // console.log("navigating home");
         navigate("/home");
       }
     } catch (error) {
@@ -56,6 +56,8 @@ function Login() {
       } else {
         toast.error("An unexpected error occurred");
       }
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -144,8 +146,13 @@ function Login() {
           <button
             type="submit"
             className="w-full bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold py-2 px-4 rounded-lg transition duration-200"
-          >
-            {isLogin ? "Login" : "Sign Up"}
+            disabled={loading}
+          >{
+              loading ? (<div className='spinner'></div>) : (
+                 isLogin? "Login": "Sign Up" 
+              )
+          }
+            
           </button>
         </form>
 
@@ -161,14 +168,19 @@ function Login() {
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-4">
-            <button className="flex items-center justify-center px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg">
-              <FaGoogle />
-              <span className="ml-1"> Google</span>
-            </button>
-            <button className="flex items-center justify-center px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg">
-              <User />
-              <span>Continue as Guest</span>
+          <div className="mt-6 grid grid-cols-1 gap-4">
+            <button
+              onClick={() => { guestAuth({ setLoading }) }}
+              className="bg-gray-800 hover:bg-gray-700 py-2 px-4 rounded-lg flex items-center space-x-2"
+              disabled={loading}
+            >
+              {loading ? (
+                <div className='spinner'></div>
+              ) : (
+                <><User className="w-5 h-5" />
+                  <span>Continue as Guest</span></>
+              )}
+
             </button>
           </div>
         </div>

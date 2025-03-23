@@ -23,13 +23,8 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 const prisma = new PrismaClient();
-const corsOptions = {
-  origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-  credentials: true,
-};
 
-app.use(cors(corsOptions));
+app.use(cors());
 
 app.use(
   session({
