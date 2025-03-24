@@ -20,9 +20,10 @@ export const isAuthenticated = async (
   }
   console.log(token);
   try {
+    const sec = process.env.SECRETCODE || "add_your_secret";
     const decoded = jwt.verify(
       token,
-      process.env.SECRETCODE as string
+      sec as string
     ) as jwtPayload;
     console.log(decoded, "after decoded");
     let user;

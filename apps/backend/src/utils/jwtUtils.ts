@@ -18,7 +18,7 @@ export const generateJWT = () => {
     id: uuidv4(),
     name: `${uniqueNamesGenerator(config)}`,
   };
-  const secretKey = process.env.SECRETCODE || "your_secret";
+  const secretKey = process.env.SECRETCODE || "add_your_secret";
   console.log(secretKey);
 
   const token = jwt.sign(payload, secretKey, {

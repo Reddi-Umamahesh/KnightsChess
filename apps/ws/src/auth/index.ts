@@ -13,7 +13,7 @@ export interface jwtUserClaims {
 
 export const extractUser = (token: string, ws: WebSocket) => {
   try {
-    const decoded = jwt.verify(token, code || "secret_key");
+    const decoded = jwt.verify(token, code || "add_your_secret");
    
     const userClaims = decoded as jwtUserClaims;
 
