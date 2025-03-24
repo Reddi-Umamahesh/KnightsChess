@@ -47,5 +47,3 @@ jobs:
             # Run the new container
             docker run -d --name backend -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/knightschess-backend:latest
             
-            # Clean up unused images
-            docker image prune -f

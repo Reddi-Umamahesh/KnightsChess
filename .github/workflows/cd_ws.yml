@@ -47,5 +47,4 @@ jobs:
             # Run the new container
             docker run -d --name ws -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/knightschess-ws:latest
             
-            # Clean up unused images
-            docker image prune -f
+            
